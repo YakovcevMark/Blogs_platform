@@ -1,5 +1,5 @@
 import express, {Express} from "express";
-import {HTTP_STATUS_CODES} from "./core/constants/http-status-codes";
+import {HTTP_STATUS_CODES} from "./core/enums/http-status-codes";
 import {blogsRepository} from "./models/blogs/repositories/db-repository";
 import {postsRepository} from "./models/posts/repositories/db-repository";
 import {RoutePaths} from "./models/paths";

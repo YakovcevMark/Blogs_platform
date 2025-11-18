@@ -1,63 +1,52 @@
 import {PostViewModel} from "../types/post.view.model";
 import {PostInputModel} from "../types/post.input.model";
-import {postsCollection} from "../../../db-settings";
-import {ObjectId} from "mongodb";
-import {getMongoViewModel} from "../../../core/utils/get-view-model";
-import {blogsRepository} from "../../blogs/repositories/db-repository";
+import {blogsCollection, postsCollection} from "../../../db-settings";
+import {ObjectId, WithId} from "mongodb";
+import {getSortDbDirection} from "../../../core/utils/get-sort-db-direction";
+import {getSkipDbValue} from "../../../core/utils/get-skip-db-value";
+import {PostsQueryList} from "../types/posts.query.list";
+import {getDbFilters} from "../../../core/utils/get-db-filters";
 
 
 class PostsRepository {
 
-    public getAll = async (): Promise<PostViewModel[]> => {
-        const postsList = await postsCollection.find().toArray()
-        return postsList.map(getMongoViewModel);
+    public getAll = async (params: PostsQueryList): Promise<WithId<PostViewModel>[]> => {
+        const {sortBy, sortDirection, pageSize, pageNumber, blogId} = params;
+
+        return await postsCollection
+            .find(getDbFilters<PostViewModel>([{fieldName: 'blogId', queryParam: blogId}]))
+            .sort(sortBy, getSortDbDirection(sortDirection))
+            .skip(getSkipDbValue({pageSize, pageNumber}))
+            .limit(pageSize)
+            .toArray()
     }
 
-    public isPersistInDb = async (id: string): Promise<boolean> => {
-        const postsList = await postsCollection.find({id}).toArray();
-        return postsList.length > 0;
+    public getCount = async (params: Pick<PostsQueryList, 'blogId'>): Promise<number> => {
+        const {blogId} = params
+        return await blogsCollection.countDocuments(getDbFilters<PostViewModel>([{
+            fieldName: 'blogId',
+            queryParam: blogId
+        }]));
     }
 
-    public getById = async (id: string): Promise<PostViewModel | undefined> => {
-        const post = await postsCollection.findOne({_id: new ObjectId(id)})
-        if (!post) {
-            return
-        } else {
-            return getMongoViewModel(post);
-        }
+    public getById = async (id: string): Promise<WithId<PostViewModel> | null> => {
+        return await postsCollection.findOne({_id: new ObjectId(id)})
     }
 
-    public create = async (body: PostInputModel): Promise<PostViewModel> => {
-        const blog = await blogsRepository.getById(body.blogId);
-        const entity = {
-            id: String(+new Date()),
-            blogName: blog!.name,
-            createdAt: new Date().toISOString(),
-            ...body,
-        }
+    public create = async (entity: PostViewModel): Promise<WithId<PostViewModel>> => {
         const result = await postsCollection.insertOne(entity);
-        return getMongoViewModel({...entity, _id: result.insertedId});
+        return {...entity, _id: result.insertedId}
     }
 
     public update = async (id: string, body: PostInputModel): Promise<boolean> => {
-
-        const post = await postsCollection.findOne({_id: new ObjectId(id)});
-
-        if (!post) {
-            return false;
-        } else {
-            await postsCollection.updateOne(
-                {
-                    _id: new ObjectId(id)
+        const resp = await postsCollection.updateOne({_id: new ObjectId(id)},
+            {
+                $set: {
+                    ...body
                 },
-                {
-                    $set:{
-                        ...body
-                    },
-                }
-            );
-            return true;
-        }
+            }
+        );
+        return resp.modifiedCount > 0;
     }
 
     public remove = async (id: string): Promise<boolean> => {

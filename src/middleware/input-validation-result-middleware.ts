@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from "express";
 import {validationResult} from "express-validator";
-import {HTTP_STATUS_CODES} from "../core/constants/http-status-codes";
+import {HTTP_STATUS_CODES} from "../core/enums/http-status-codes";
 import {FieldValidationError} from "express-validator/lib/base";
 import {FieldError} from "../core/types/error-response-type";
 

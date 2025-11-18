@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import {HTTP_STATUS_CODES} from "../core/constants/http-status-codes";
+import {HTTP_STATUS_CODES} from "../core/enums/http-status-codes";
 
 export const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'qwerty';

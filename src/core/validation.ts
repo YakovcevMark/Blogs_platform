@@ -1,7 +1,7 @@
 import {body} from "express-validator";
 
 export const validationMessages = {
-    required: "This field is required",
+    required: (type:'field' | 'param') => `This ${type} is required`,
     url: "This field should be a url",
     stringField: "This field should be a string",
     numericString: "This field should be a numeric string",
@@ -12,7 +12,7 @@ type StringValidation = { name: string, max?: number, min?: number }
 
 export const stringValidation = ({name, max, min}: StringValidation) => {
     const scheme = body(name)
-        .exists().withMessage(validationMessages.required)
+        .exists().withMessage(validationMessages.required('param'))
         .isString().withMessage(validationMessages.stringField);
     if (max) {
         scheme

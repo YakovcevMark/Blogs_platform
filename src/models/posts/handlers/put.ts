@@ -1,11 +1,11 @@
 import {Request, Response} from "express";
-import {postsRepository} from "../repositories/db-repository";
 import {RequestEntityId} from "../../../core/types";
-import {HTTP_STATUS_CODES} from "../../../core/constants/http-status-codes";
+import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
 import {PostInputModel} from "../types/post.input.model";
+import {postsService} from "../application/posts.service";
 
 export const updatePostHandler = async (req: Request<RequestEntityId, PostInputModel>, res: Response) => {
-    const isUpdated = await postsRepository.update(req.params.id, req.body);
+    const isUpdated = await postsService.update(req.params.id, req.body);
     res.sendStatus(
         isUpdated
             ? HTTP_STATUS_CODES.NO_CONTENT_204

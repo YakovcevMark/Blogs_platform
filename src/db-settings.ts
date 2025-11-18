@@ -17,7 +17,8 @@ export async function connectToDatabase() {
     try {
         await client.connect();
         await client.db(db_name).command({ ping: 1 });
-        console.log(`Successfully connected to database: ${db_name}`);
+        console.log(`Successfully connected to database: ${mongo_url}`);
+        console.log(`Data base name: ${db_name}`);
     } catch (error) {
         await client.close();
         throw new Error(`Can't connected to db with url:${mongo_url}`);

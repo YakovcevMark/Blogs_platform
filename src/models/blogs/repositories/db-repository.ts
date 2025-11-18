@@ -1,15 +1,29 @@
 import {BlogViewModel} from "../types/blog.view.model";
 import {BlogInputModel} from "../types/blog.input.model";
 import {blogsCollection} from "../../../db-settings";
-import {ObjectId} from "mongodb";
-import {getMongoViewModel} from "../../../core/utils/get-view-model";
+import {ObjectId, WithId} from "mongodb";
+import {BlogsQueryList} from "../types/blogs.query.list";
+import {getSortDbDirection} from "../../../core/utils/get-sort-db-direction";
+import {getSkipDbValue} from "../../../core/utils/get-skip-db-value";
+import {getDbFilters} from "../../../core/utils/get-db-filters";
 
 
 class BlogsRepository {
 
-    public getAll = async (): Promise<BlogViewModel[]> => {
-        const blogsList = await blogsCollection.find().toArray()
-        return blogsList.map(getMongoViewModel);
+    public getAll = async (params: BlogsQueryList): Promise<WithId<BlogViewModel>[]> => {
+        const {searchNameTerm, sortBy, sortDirection, pageSize, pageNumber} = params;
+
+        return await blogsCollection
+            .find(getDbFilters<BlogViewModel>([{fieldName: 'name', queryParam: searchNameTerm}]))
+            .sort(sortBy, getSortDbDirection(sortDirection))
+            .skip(getSkipDbValue({pageSize, pageNumber}))
+            .limit(pageSize)
+            .toArray()
+    }
+
+    public getCount = async (params: Partial<Pick<BlogsQueryList, 'searchNameTerm'>>): Promise<number> => {
+        const {searchNameTerm} = params;
+        return await blogsCollection.countDocuments(getDbFilters<BlogViewModel>([{fieldName: 'name', queryParam: searchNameTerm}]));
     }
 
     public isPersistInDb = async (id: string): Promise<boolean> => {
@@ -17,49 +31,24 @@ class BlogsRepository {
         return blogsList.length > 0;
     }
 
-    public getById = async (id: string): Promise<BlogViewModel | undefined> => {
-        const blog = await blogsCollection.findOne({_id: new ObjectId(id)})
-        if (!blog) {
-            return
-        } else {
-            return getMongoViewModel(blog);
-        }
+    public getById = async (id: string): Promise<WithId<BlogViewModel> | null> => {
+        return await blogsCollection.findOne({_id: new ObjectId(id)})
     }
 
-    public create = async (body: BlogInputModel): Promise<BlogViewModel> => {
-        const entity = {
-            id: String(+new Date()),
-            createdAt: new Date().toISOString(),
-            isMembership: false,
-            ...body,
-        }
+    public create = async (entity: BlogViewModel): Promise<WithId<BlogViewModel>> => {
         const result = await blogsCollection.insertOne(entity);
-        return getMongoViewModel({...entity, _id: result.insertedId});
+        return {...entity, _id: result.insertedId};
     }
 
     public update = async (id: string, body: BlogInputModel): Promise<boolean> => {
-
-        const blog = await blogsCollection.findOne(
+        const resp = await blogsCollection.updateOne({_id: new ObjectId(id)},
             {
-                _id: new ObjectId(id)
+                $set: {
+                    ...body
+                },
             }
         );
-
-        if (!blog) {
-            return false;
-        } else {
-            await blogsCollection.updateOne(
-                {
-                    _id: new ObjectId(id)
-                },
-                {
-                    $set: {
-                        ...body
-                    },
-                }
-            );
-            return true;
-        }
+        return resp.modifiedCount > 0;
     }
 
     public remove = async (id: string): Promise<boolean> => {
