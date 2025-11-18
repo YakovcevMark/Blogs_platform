@@ -8,12 +8,13 @@ import {postValidationMiddleware} from "./validation/post.dto.validation";
 import {inputValidationResultMiddleware} from "../../middleware/input-validation-result-middleware";
 import {superAdminGuardMiddleware} from "../../middleware/super-admin-guard-middleware";
 import {postsQueryMiddleware} from "./middleware/posts.query.middleware";
+import {blogIdBodyValidation} from "./middleware/blogId.body.validation.middleware";
 
 const postsRouter = Router()
 
 postsRouter.get('', postsQueryMiddleware, getPostsHandler)
 postsRouter.get('/:id', getPostByIdHandler)
-postsRouter.post('', superAdminGuardMiddleware, postValidationMiddleware, inputValidationResultMiddleware, createPostHandler)
+postsRouter.post('', superAdminGuardMiddleware, postValidationMiddleware, blogIdBodyValidation, inputValidationResultMiddleware, createPostHandler)
 postsRouter.put('/:id', superAdminGuardMiddleware, postValidationMiddleware, inputValidationResultMiddleware, updatePostHandler)
 postsRouter.delete('/:id', superAdminGuardMiddleware, deletePostHandler)
 

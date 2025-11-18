@@ -27,8 +27,8 @@ class BlogsRepository {
     }
 
     public isPersistInDb = async (id: string): Promise<boolean> => {
-        const blogsList = await blogsCollection.find({id}).toArray();
-        return blogsList.length > 0;
+        const count = await blogsCollection.countDocuments({_id: new ObjectId(id)});
+        return count > 0;
     }
 
     public getById = async (id: string): Promise<WithId<BlogViewModel> | null> => {

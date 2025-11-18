@@ -1,6 +1,5 @@
-import {validationMessages} from "../../../core/validation";
-import {param} from "express-validator";
+import {idValidation} from "../../../core/validation";
 
 export const blogIdParamValidation = [
-    param('blogId').exists().withMessage(validationMessages.required('param'))
+    idValidation({name: 'blogId', type: 'param'}),
 ]

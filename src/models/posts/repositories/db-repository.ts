@@ -1,6 +1,6 @@
 import {PostViewModel} from "../types/post.view.model";
 import {PostInputModel} from "../types/post.input.model";
-import {blogsCollection, postsCollection} from "../../../db-settings";
+import {postsCollection} from "../../../db-settings";
 import {ObjectId, WithId} from "mongodb";
 import {getSortDbDirection} from "../../../core/utils/get-sort-db-direction";
 import {getSkipDbValue} from "../../../core/utils/get-skip-db-value";
@@ -23,10 +23,12 @@ class PostsRepository {
 
     public getCount = async (params: Pick<PostsQueryList, 'blogId'>): Promise<number> => {
         const {blogId} = params
-        return await blogsCollection.countDocuments(getDbFilters<PostViewModel>([{
-            fieldName: 'blogId',
-            queryParam: blogId
-        }]));
+        return await postsCollection.countDocuments(
+            getDbFilters<PostViewModel>([{
+                fieldName: 'blogId',
+                queryParam: blogId
+            }])
+        );
     }
 
     public getById = async (id: string): Promise<WithId<PostViewModel> | null> => {
