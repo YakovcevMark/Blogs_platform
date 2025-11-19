@@ -8,7 +8,7 @@ export const getDbFilters = <T>(filters: Filter<T>[]) => {
         const {fieldName, queryParam} = filter
         if (queryParam) {
             output[fieldName as string] = {
-                $regex: queryParam
+                $regex: queryParam.toLowerCase()
             }
         }
     }
