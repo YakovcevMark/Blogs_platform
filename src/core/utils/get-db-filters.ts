@@ -3,12 +3,13 @@ type Filter<T> = {
     queryParam?: string;
 }
 export const getDbFilters = <T>(filters: Filter<T>[]) => {
-    const output: Record<string, { $regex: string }> = {}
+    const output: Record<string, { $regex: string, $options: string }> = {}
     for (const filter of filters) {
         const {fieldName, queryParam} = filter
         if (queryParam) {
             output[fieldName as string] = {
-                $regex: queryParam.toLowerCase()
+                $regex: queryParam,
+                $options: 'i'
             }
         }
     }
