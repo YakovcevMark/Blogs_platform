@@ -12,7 +12,7 @@ import {blogIdBodyValidation} from "./middleware/blogId.body.validation.middlewa
 
 const postsRouter = Router()
 
-postsRouter.get('', postsQueryMiddleware, getPostsHandler)
+postsRouter.get('', postsQueryMiddleware, inputValidationResultMiddleware, getPostsHandler)
 postsRouter.get('/:id', getPostByIdHandler)
 postsRouter.post('', superAdminGuardMiddleware, postValidationMiddleware, blogIdBodyValidation, inputValidationResultMiddleware, createPostHandler)
 postsRouter.put('/:id', superAdminGuardMiddleware, postValidationMiddleware, inputValidationResultMiddleware, updatePostHandler)

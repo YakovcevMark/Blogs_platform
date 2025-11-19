@@ -17,7 +17,7 @@ import {createPostByBlogIdHandler} from "./handlers/create.post.by.blog.id";
 
 const blogsRouter = Router()
 
-blogsRouter.get('', blogsQueryMiddleware, getBlogsHandler)
+blogsRouter.get('', blogsQueryMiddleware, inputValidationResultMiddleware, getBlogsHandler)
 
 blogsRouter.get('/:id', getBlogByIdHandler)
 

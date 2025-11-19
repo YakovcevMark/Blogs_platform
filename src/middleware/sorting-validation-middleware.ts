@@ -9,6 +9,10 @@ export const sortingValidationMiddleware =
         const currentSortByFields = ['createdAt'];
         sortByFields && currentSortByFields.concat(sortByFields);
 
+        if (sortByFields) {
+            currentSortByFields.push(...sortByFields);
+        }
+
         await Promise.all([
 
             query('sortBy')

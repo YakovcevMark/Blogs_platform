@@ -5,6 +5,7 @@ import {PostsQueryList} from "../types/posts.query.list";
 
 export const getPostsHandler = async (req: Request, res: Response) => {
     const queryParamsFromValidator = matchedData(req, {locations: ['query']}) as PostsQueryList;
-    const posts = await postsService.getAll(queryParamsFromValidator);
+
+    const posts = await postsService.getAll({...req.query, ...queryParamsFromValidator});
     res.send(posts)
 }

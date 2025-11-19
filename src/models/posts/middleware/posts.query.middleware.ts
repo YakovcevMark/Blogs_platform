@@ -3,5 +3,5 @@ import {sortingValidationMiddleware} from "../../../middleware/sorting-validatio
 
 export const postsQueryMiddleware = [
     paginationValidationMiddleware,
-    sortingValidationMiddleware(),
+    sortingValidationMiddleware(['blogName']),
 ]
