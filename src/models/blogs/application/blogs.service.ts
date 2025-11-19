@@ -32,6 +32,10 @@ class BlogsService {
         }
     }
 
+    public isPersistInDb = async (id: string): Promise<boolean> => {
+        return await blogsRepository.isPersistInDb(id);
+    }
+
     public create = async (body: BlogInputModel): Promise<BlogViewModel> => {
         const entity = {
             id: String(+new Date()),
