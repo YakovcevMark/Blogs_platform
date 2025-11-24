@@ -16,15 +16,13 @@ export const getDbFilters = <T>(filters: Filter<T>[]) => {
 
             if (isStrictEqual) {
                 obj[fieldName.toString()] = queryParam
-                output.push(obj)
             } else {
-
                 obj[fieldName.toString()] = {
                     $regex: queryParam,
                     $options: 'i'
                 }
-
             }
+            output.push(obj)
         }
     }
 
