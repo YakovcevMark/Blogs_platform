@@ -47,7 +47,11 @@ class UsersQueryRepository {
     }
 
     public getUserByLoginOrEmail = async (loginOrEmail: string): Promise<WithId<UserDb> | null> => {
-        return await usersCollection.findOne({$or: [{login: loginOrEmail}, {email: loginOrEmail}]});
+        return await usersCollection.findOne(this.getListFilter({
+            searchLoginTerm: loginOrEmail,
+            searchEmailTerm: loginOrEmail,
+            isStrictEqual: true
+        }));
     }
 
     public clearDB = async () => {
