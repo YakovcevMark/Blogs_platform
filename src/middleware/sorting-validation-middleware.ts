@@ -7,7 +7,6 @@ export const sortingValidationMiddleware =
     (sortByFields?: string[]) => async (req: Request, res: Response, next: NextFunction) => {
 
         const currentSortByFields = ['createdAt'];
-        sortByFields && currentSortByFields.concat(sortByFields);
 
         if (sortByFields) {
             currentSortByFields.push(...sortByFields);

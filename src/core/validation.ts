@@ -5,6 +5,7 @@ export const validationMessages = {
     url: "This field should be a url",
     stringField: "This field should be a string",
     numericString: "This field should be a numeric string",
+    email: "This field should be a valid email address",
     stringMaxLength: (length: number) => `This field should be be a maximum of ${length} characters long`,
     stringMinLength: (length: number) => `This field should be at least ${length} characters long`,
 }
@@ -39,3 +40,6 @@ export const idValidation = (props: { name?: string, type?: 'param' | 'body' } |
 
 export const urlValidation = (props: StringValidation) => stringValidation(props)
     .isURL().withMessage(validationMessages.url)
+
+export const emailValidation = (props: StringValidation) => stringValidation(props)
+    .isEmail().withMessage(validationMessages.email)

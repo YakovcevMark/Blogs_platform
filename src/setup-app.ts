@@ -6,6 +6,8 @@ import {RoutePaths} from "./models/paths";
 import {blogsRouter} from "./models/blogs/routes";
 import {postsRouter} from "./models/posts/routes";
 import {connectToDatabase} from "./db-settings";
+import {usersRouter} from "./models/users/routes";
+import {authRouter} from "./models/auth/routes";
 
 export const setupApp = async (app: Express) => {
     app.use(express.json());
@@ -14,6 +16,8 @@ export const setupApp = async (app: Express) => {
 
     app.use(RoutePaths.blogs, blogsRouter)
     app.use(RoutePaths.posts, postsRouter)
+    app.use(RoutePaths.users, usersRouter)
+    app.use(RoutePaths.auth, authRouter)
 
 
 

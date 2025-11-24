@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import {MongoClient} from "mongodb";
 import {BlogViewModel} from "./models/blogs/types/blog.view.model";
 import {PostViewModel} from "./models/posts/types/post.view.model";
+import {UserDb} from "./models/users/types/user.db.model";
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ const db = client.db(db_name);
 
 export const blogsCollection = db.collection<BlogViewModel>("blogs");
 export const postsCollection = db.collection<PostViewModel>("posts");
+export const usersCollection = db.collection<UserDb>("posts");
 
 export async function connectToDatabase() {
     try {
