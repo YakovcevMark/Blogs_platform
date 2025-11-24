@@ -15,7 +15,7 @@ const usersRouter = Router()
 usersRouter.get('',
     superAdminGuardMiddleware,
     paginationValidationMiddleware,
-    sortingValidationMiddleware(),
+    sortingValidationMiddleware(['login', 'email']),
     inputValidationResultMiddleware,
     getUsersHandler
 )
