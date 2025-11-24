@@ -5,7 +5,7 @@ import {loginHandler} from "./handlers/login";
 
 const authRouter = Router()
 
-authRouter.post('',
+authRouter.post('login',
     loginValidationMiddleware,
     inputValidationResultMiddleware,
     loginHandler
