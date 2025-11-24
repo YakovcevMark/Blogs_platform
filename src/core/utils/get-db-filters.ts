@@ -26,5 +26,5 @@ export const getDbFilters = <T>(filters: Filter<T>[]) => {
         }
     }
 
-    return {$or: output};
+    return output.length ? {$or: output} : {};
 }
