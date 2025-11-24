@@ -5,30 +5,28 @@ type Filter<T> = {
 }
 export const getDbFilters = <T>(filters: Filter<T>[]) => {
 
-    const output: Record<string, { $regex: string, $options: string } | string> = {}
+    const output: Record<string, { $regex: string, $options: string } | string>[] = [];
 
     for (const filter of filters) {
 
         const {fieldName, queryParam, isStrictEqual = false} = filter
 
         if (queryParam) {
-            let filterParam
+            const obj: Record<string, { $regex: string, $options: string } | string> = {}
 
             if (isStrictEqual) {
-                filterParam = queryParam
-
+                obj[fieldName.toString()] = queryParam
+                output.push(obj)
             } else {
 
-                filterParam = {
+                obj[fieldName.toString()] = {
                     $regex: queryParam,
                     $options: 'i'
                 }
 
             }
-
-            output[fieldName as string] = filterParam
         }
     }
 
-    return output;
+    return {$or: output};
 }
