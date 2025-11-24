@@ -13,7 +13,7 @@ const db = client.db(db_name);
 
 export const blogsCollection = db.collection<BlogViewModel>("blogs");
 export const postsCollection = db.collection<PostViewModel>("posts");
-export const usersCollection = db.collection<UserDb>("posts");
+export const usersCollection = db.collection<UserDb>("users");
 
 export async function connectToDatabase() {
     try {
