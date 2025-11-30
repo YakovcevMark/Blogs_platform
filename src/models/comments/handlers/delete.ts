@@ -2,9 +2,8 @@ import {Request, Response} from "express";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
 import {commentsService} from "../application/comments.service";
 import {commentsQueryRepository} from "../repositories/query-repo";
-import {UserViewModel} from "../../users/types/user.view.model";
 
-export const deleteCommentHandler = async (req: Request<{ commentId: string, user:UserViewModel }>, res: Response) => {
+export const deleteCommentHandler = async (req: Request, res: Response) => {
     const comment = await commentsQueryRepository.getById({id: req.params.commentId});
 
     if (!comment) {
