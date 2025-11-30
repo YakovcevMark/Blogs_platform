@@ -10,19 +10,19 @@ import {authMiddleware} from "../../middleware/auth-middleware";
 import {postsQueryMiddleware} from "./middleware/posts.query.middleware";
 import {blogIdBodyValidation} from "./middleware/blogId.body.validation.middleware";
 import {idValidation} from "../../core/validation";
-import {commentsQueryRepository} from "../comments/repositories/query-repo";
 import {commentsQueryMiddleware} from "../comments/middleware/comments.query.middleware";
 import {getCommentsHandler} from "../comments/handlers/get";
 import {commentValidationMiddleware} from "../comments/validation/comment.dto.validation";
 import {createCommentHandler} from "../comments/handlers/post";
+import {superAdminGuardMiddleware} from "../../middleware/super-admin-guard-middleware";
 
 const postsRouter = Router()
 
 postsRouter.get('', postsQueryMiddleware, inputValidationResultMiddleware, getPostsHandler)
 postsRouter.get('/:id', getPostByIdHandler)
-postsRouter.post('', authMiddleware, postValidationMiddleware, blogIdBodyValidation, inputValidationResultMiddleware, createPostHandler)
-postsRouter.put('/:id', authMiddleware, postValidationMiddleware, inputValidationResultMiddleware, updatePostHandler)
-postsRouter.delete('/:id', authMiddleware, deletePostHandler)
+postsRouter.post('', superAdminGuardMiddleware, postValidationMiddleware, blogIdBodyValidation, inputValidationResultMiddleware, createPostHandler)
+postsRouter.put('/:id', superAdminGuardMiddleware, postValidationMiddleware, inputValidationResultMiddleware, updatePostHandler)
+postsRouter.delete('/:id', superAdminGuardMiddleware, deletePostHandler)
 
 // comments
 postsRouter.get('/:postId/comments', idValidation({name:'postId', type:'param'}), commentsQueryMiddleware, inputValidationResultMiddleware, getCommentsHandler)

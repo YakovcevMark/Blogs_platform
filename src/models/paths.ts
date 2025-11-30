@@ -3,4 +3,5 @@ export const RoutePaths = {
     blogs: '/blogs/',
     users: '/users/',
     auth: '/auth/',
+    comments: '/comments/',
 }

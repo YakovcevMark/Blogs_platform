@@ -1,6 +1,5 @@
 import {Router} from "express";
 import {inputValidationResultMiddleware} from "../../middleware/input-validation-result-middleware";
-import {authMiddleware} from "../../middleware/auth-middleware";
 import {paginationValidationMiddleware} from "../../middleware/pagination-validation-middleware";
 import {sortingValidationMiddleware} from "../../middleware/sorting-validation-middleware";
 import {idValidation} from "../../core/validation";
@@ -8,12 +7,13 @@ import {getUsersHandler} from "./handlers/get";
 import {deleteUserHandler} from "./handlers/delete";
 import {userValidationMiddleware} from "./validation/user.dto.validation";
 import {createUserHandler} from "./handlers/post";
+import {superAdminGuardMiddleware} from "../../middleware/super-admin-guard-middleware";
 
 
 const usersRouter = Router()
 
 usersRouter.get('',
-    authMiddleware,
+    superAdminGuardMiddleware,
     paginationValidationMiddleware,
     sortingValidationMiddleware(['login', 'email']),
     inputValidationResultMiddleware,
@@ -22,7 +22,7 @@ usersRouter.get('',
 
 
 usersRouter.post('',
-    authMiddleware,
+    superAdminGuardMiddleware,
     userValidationMiddleware,
     inputValidationResultMiddleware,
     createUserHandler
@@ -30,7 +30,7 @@ usersRouter.post('',
 
 
 usersRouter.delete('/:id',
-    authMiddleware,
+    superAdminGuardMiddleware,
     idValidation({name: 'id', type: 'param'}),
     inputValidationResultMiddleware,
     deleteUserHandler

@@ -57,6 +57,7 @@ export class CommentsQueryRepository {
     public clearDB = async () => {
         await commentsCollection.deleteMany()
     }
+
     static getViewModel = (comment: WithId<CommentDb>): CommentViewModel => {
         const commentDB = getMongoViewModel(comment)
         return {
