@@ -17,7 +17,7 @@ commentsRouter.get('/:id',
 )
 
 
-commentsRouter.patch('/:commentId',
+commentsRouter.put('/:commentId',
     authMiddleware,
     idValidation({name: 'commentId', type: 'param'}),
     commentValidationMiddleware,

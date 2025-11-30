@@ -6,13 +6,14 @@ import {PostViewModel} from "../types/post.view.model";
 import {PostInputModel} from "../types/post.input.model";
 import {blogsService} from "../../blogs/application/blogs.service";
 import {PostsQueryList} from "../types/posts.query.list";
+import {postsQueryRepository} from "../repositories/query-repo";
 
 class PostsService {
 
     public getAll = async (params: PostsQueryList): Promise<PaginatorOutput<PostViewModel>> => {
         const {pageSize, pageNumber} = params;
-        const items = await postsRepository.getAll(params)
-        const totalCount = await postsRepository.getCount(params);
+        const items = await postsQueryRepository.getAll(params)
+        const totalCount = await postsQueryRepository.getCount(params);
 
         return {
             pageSize,
@@ -25,7 +26,7 @@ class PostsService {
     }
 
     public getById = async (id: string): Promise<PostViewModel | null> => {
-        const entity = await postsRepository.getById(id);
+        const entity = await postsQueryRepository.getById(id);
         if (!entity) {
             return null
         } else {

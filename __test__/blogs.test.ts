@@ -22,11 +22,11 @@ describe(RoutePaths.blogs, () => {
     const app = express();
     let createdBlog: BlogViewModel | null = null;
 
-    setupApp(app);
 
     const getAll = async () => await request(app).get(RoutePaths.blogs)
 
     beforeAll(async () => {
+        await setupApp(app);
         await request(app).delete("/testing/all-data").expect(HTTP_STATUS_CODES.NO_CONTENT_204)
     });
 
@@ -34,7 +34,7 @@ describe(RoutePaths.blogs, () => {
     it('getAll', async () => {
         const resp = await getAll()
         expect(resp.status).toBe(HTTP_STATUS_CODES.OK_200)
-        expect(resp.body).toStrictEqual([])
+        expect(resp.body).toStrictEqual({"items": [], "page": 1, "pageSize": 10, "pagesCount": 0, "totalCount": 0})
     })
 
     it('post', async () => {
@@ -49,7 +49,7 @@ describe(RoutePaths.blogs, () => {
         createdBlog = resp.body;
         const all = await getAll()
         expect(all.status).toBe(HTTP_STATUS_CODES.OK_200)
-        expect(all.body.length).toBe(1)
+        expect(all.body.items.length).toBe(1)
     })
 
     it('post with incorrect name:', async () => {
@@ -86,8 +86,5 @@ describe(RoutePaths.blogs, () => {
     it("shouldn't get entity by id after deleting", async () => {
         await request(app).get(`${RoutePaths.blogs}${createdBlog?.id}`).expect(HTTP_STATUS_CODES.NOT_FOUND_404)
     })
-    // it("should clear DB", async () => {
-    //     await request(app).delete(`/testing/all-data`).expect(HTTP_STATUS_CODES.NO_CONTENT_204)
-    // })
 })
 
