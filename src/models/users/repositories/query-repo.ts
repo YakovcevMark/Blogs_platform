@@ -6,9 +6,11 @@ import {getSortDbDirection} from "../../../core/utils/get-sort-db-direction";
 import {getSkipDbValue} from "../../../core/utils/get-skip-db-value";
 import {getDbFilters} from "../../../core/utils/get-db-filters";
 import {UserDb} from "../types/user.db.model";
+import {getMongoViewModel} from "../../../core/utils/get-view-model";
+import {RequestEntityId} from "../../../core/types";
 
 
-class UsersQueryRepository {
+export class UsersQueryRepository {
 
     private getListFilter = (params: Pick<UsersQueryList, 'searchLoginTerm' | 'searchEmailTerm'> & {
         isStrictEqual?: boolean
@@ -29,6 +31,16 @@ class UsersQueryRepository {
             .skip(getSkipDbValue({pageSize, pageNumber}))
             .limit(pageSize)
             .toArray()
+    }
+
+    public getById = async (params: RequestEntityId): Promise<UserViewModel | null> => {
+        const {id} = params;
+        const entity = await usersCollection.findOne({_id: new ObjectId(id)});
+        if (entity) {
+            return UsersQueryRepository.getViewModel(entity)
+        }
+        return null;
+
     }
 
     public getCount = async (params: Partial<Pick<UsersQueryList, 'searchLoginTerm' | 'searchEmailTerm'>> & {
@@ -58,6 +70,15 @@ class UsersQueryRepository {
         await usersCollection.deleteMany()
     }
 
+    static getViewModel = (user: WithId<UserDb>): UserViewModel => {
+        const userDB = getMongoViewModel(user)
+        return {
+            id: userDB.id,
+            email: userDB.email,
+            login: userDB.login,
+            createdAt: userDB.createdAt,
+        }
+    }
 }
 
 

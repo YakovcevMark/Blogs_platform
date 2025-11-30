@@ -11,6 +11,7 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "files": ["./src/core/types/index.d.ts"]
   //"exclude": ["__tests__", "dist", "node_modules"]
 }

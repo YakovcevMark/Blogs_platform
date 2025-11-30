@@ -1,6 +1,6 @@
 import {Router} from "express";
 import {inputValidationResultMiddleware} from "../../middleware/input-validation-result-middleware";
-import {superAdminGuardMiddleware} from "../../middleware/super-admin-guard-middleware";
+import {authMiddleware} from "../../middleware/auth-middleware";
 import {paginationValidationMiddleware} from "../../middleware/pagination-validation-middleware";
 import {sortingValidationMiddleware} from "../../middleware/sorting-validation-middleware";
 import {idValidation} from "../../core/validation";
@@ -13,7 +13,7 @@ import {createUserHandler} from "./handlers/post";
 const usersRouter = Router()
 
 usersRouter.get('',
-    superAdminGuardMiddleware,
+    authMiddleware,
     paginationValidationMiddleware,
     sortingValidationMiddleware(['login', 'email']),
     inputValidationResultMiddleware,
@@ -22,7 +22,7 @@ usersRouter.get('',
 
 
 usersRouter.post('',
-    superAdminGuardMiddleware,
+    authMiddleware,
     userValidationMiddleware,
     inputValidationResultMiddleware,
     createUserHandler
@@ -30,7 +30,7 @@ usersRouter.post('',
 
 
 usersRouter.delete('/:id',
-    superAdminGuardMiddleware,
+    authMiddleware,
     idValidation({name: 'id', type: 'param'}),
     inputValidationResultMiddleware,
     deleteUserHandler

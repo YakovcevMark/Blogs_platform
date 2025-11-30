@@ -6,7 +6,7 @@ import {updateBlogHandler} from "./handlers/put";
 import {deleteBlogHandler} from "./handlers/delete";
 import {blogValidationMiddleware} from "./validation/blog.dto.validation";
 import {inputValidationResultMiddleware} from "../../middleware/input-validation-result-middleware";
-import {superAdminGuardMiddleware} from "../../middleware/super-admin-guard-middleware";
+import {authMiddleware} from "../../middleware/auth-middleware";
 import {blogsQueryMiddleware} from "./middleware/blogs.query.middleware";
 import {RoutePaths} from "../paths";
 import {postsQueryMiddleware} from "../posts/middleware/posts.query.middleware";
@@ -22,14 +22,14 @@ blogsRouter.get('', blogsQueryMiddleware, inputValidationResultMiddleware, getBl
 blogsRouter.get('/:id', getBlogByIdHandler)
 
 blogsRouter.post('',
-    superAdminGuardMiddleware,
+    authMiddleware,
     blogValidationMiddleware,
     inputValidationResultMiddleware,
     createBlogHandler
 )
 
 blogsRouter.put('/:id',
-    superAdminGuardMiddleware,
+    authMiddleware,
     blogValidationMiddleware,
     inputValidationResultMiddleware,
     updateBlogHandler
@@ -42,13 +42,13 @@ blogsRouter.get(`/:blogId${RoutePaths.posts}`,
 )
 
 blogsRouter.post(`/:blogId${RoutePaths.posts}`,
-    superAdminGuardMiddleware,
+    authMiddleware,
     blogIdParamValidation,
     postValidationMiddleware,
     inputValidationResultMiddleware,
     createPostByBlogIdHandler,
 )
 
-blogsRouter.delete('/:id', superAdminGuardMiddleware, deleteBlogHandler)
+blogsRouter.delete('/:id', authMiddleware, deleteBlogHandler)
 
 export {blogsRouter};

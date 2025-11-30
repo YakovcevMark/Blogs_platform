@@ -1,12 +1,10 @@
 import {UserViewModel} from "../types/user.view.model";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {UsersQueryList} from "../types/users.query.list";
-import {getMongoViewModel} from "../../../core/utils/get-view-model";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
 import {usersRepository} from "../repositories/repo";
-import {usersQueryRepository} from "../repositories/query-repo";
+import {UsersQueryRepository, usersQueryRepository} from "../repositories/query-repo";
 import {UserDb} from "../types/user.db.model";
-import {WithId} from "mongodb";
 import {UserInputModel} from "../types/user.input.model";
 import {compare, hash} from 'bcrypt'
 import {LoginInputModel} from "../../auth/types/login,input.model";
@@ -17,17 +15,6 @@ class UsersService {
         return await hash(password, 10);
     }
 
-
-    private getUserViewModel = (user: WithId<UserDb>): UserViewModel => {
-        const userDB = getMongoViewModel(user)
-        return {
-            id: userDB.id,
-            email: userDB.email,
-            login: userDB.login,
-            createdAt: userDB.createdAt,
-        }
-    }
-
     public getAll = async (params: UsersQueryList): Promise<PaginatorOutput<UserViewModel>> => {
         const {searchEmailTerm, searchLoginTerm, pageSize, pageNumber} = params;
         const items = await usersQueryRepository.getAll(params)
@@ -35,7 +22,7 @@ class UsersService {
 
         return {
             pageSize,
-            items: items.map(this.getUserViewModel),
+            items: items.map(UsersQueryRepository.getViewModel),
             page: pageNumber,
             pagesCount: getPagesCount({pageSize, totalCount}),
             totalCount
@@ -55,15 +42,23 @@ class UsersService {
 
         const resp = await usersRepository.create(entity);
 
-        return this.getUserViewModel(resp);
+        return UsersQueryRepository.getViewModel(resp);
     }
 
-    public checkCredentials = async (body: LoginInputModel): Promise<boolean> => {
+    public checkCredentials = async (body: LoginInputModel): Promise<UserViewModel | null> => {
         const user = await usersQueryRepository.getUserByLoginOrEmail(body.loginOrEmail)
+
         if (!user) {
-            return false;
+            return null;
         }
-        return await compare(body.password, user.password)
+
+        const isPasswordCorrect = await compare(body.password, user.password);
+
+        if (!isPasswordCorrect) {
+            return null;
+        }
+
+        return UsersQueryRepository.getViewModel(user);
     }
 
     public remove = async (id: string): Promise<boolean> => {
