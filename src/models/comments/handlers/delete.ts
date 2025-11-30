@@ -1,10 +1,25 @@
 import {Request, Response} from "express";
-import {RequestEntityId} from "../../../core/types";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
 import {commentsService} from "../application/comments.service";
+import {commentsQueryRepository} from "../repositories/query-repo";
+import {UserViewModel} from "../../users/types/user.view.model";
 
-export const deleteCommentHandler = async (req: Request<{ commentId: string }>, res: Response) => {
+export const deleteCommentHandler = async (req: Request<{ commentId: string, user:UserViewModel }>, res: Response) => {
+    const comment = await commentsQueryRepository.getById({id: req.params.commentId});
+
+    if (!comment) {
+        res.sendStatus(HTTP_STATUS_CODES.NOT_FOUND_404)
+        return;
+    }
+
+    if (comment.commentatorInfo.userId !== req!.user!.id) {
+        res.sendStatus(HTTP_STATUS_CODES.FORBIDDEN_403)
+        return;
+    }
+
+
     const isRemoved = await commentsService.remove(req.params.commentId);
+
     res.sendStatus(
         isRemoved
             ? HTTP_STATUS_CODES.NO_CONTENT_204
