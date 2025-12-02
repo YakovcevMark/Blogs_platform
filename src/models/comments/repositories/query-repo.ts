@@ -8,10 +8,20 @@ import {CommentDb} from "../types/comment.db.model";
 import {RequestEntityId} from "../../../core/types";
 import {CommentViewModel} from "../types/comment.view.model";
 import {getMongoViewModel} from "../../../core/utils/get-view-model";
+import {PaginatorOutput} from "../../../core/types/paginator.output";
+import {getPagesCount} from "../../../core/utils/get-pages-count";
 
 
 export class CommentsQueryRepository {
-   
+    static getViewModel = (comment: WithId<CommentDb>): CommentViewModel => {
+        const commentDB = getMongoViewModel(comment)
+        return {
+            id: commentDB.id,
+            content: commentDB.content,
+            commentatorInfo: commentDB.commentatorInfo,
+            createdAt: comment.createdAt
+        }
+    }
     private getListFilter = (params: Pick<CommentsQueryList, 'postId'>) => {
         const {postId} = params;
         return getDbFilters<CommentDb>([
@@ -19,18 +29,24 @@ export class CommentsQueryRepository {
         ])
     }
 
-    public getAll = async (params: CommentsQueryList): Promise<CommentViewModel[]> => {
+    public getAll = async (params: CommentsQueryList): Promise<PaginatorOutput<CommentViewModel>> => {
         const {postId, sortBy, sortDirection, pageSize, pageNumber} = params;
 
-        const comments =  await commentsCollection
+        const items = await commentsCollection
             .find(this.getListFilter({postId}))
             .sort(sortBy, getSortDbDirection(sortDirection))
             .skip(getSkipDbValue({pageSize, pageNumber}))
             .limit(pageSize)
             .toArray()
+        const totalCount = await this.getCount({postId})
 
-        return comments.map(CommentsQueryRepository.getViewModel);
-
+        return {
+            pageSize,
+            items: items.map(CommentsQueryRepository.getViewModel),
+            page: pageNumber,
+            pagesCount: getPagesCount({pageSize, totalCount}),
+            totalCount
+        }
     }
 
     public getCount = async (params: Partial<Pick<CommentsQueryList, 'postId'>>): Promise<number> => {
@@ -58,15 +74,7 @@ export class CommentsQueryRepository {
         await commentsCollection.deleteMany()
     }
 
-    static getViewModel = (comment: WithId<CommentDb>): CommentViewModel => {
-        const commentDB = getMongoViewModel(comment)
-        return {
-            id: commentDB.id,
-            content: commentDB.content,
-            commentatorInfo: commentDB.commentatorInfo,
-            createdAt: comment.createdAt
-        }
-    }
+
 }
 
 

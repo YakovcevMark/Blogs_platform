@@ -1,13 +1,17 @@
 import {usersCollection} from "../../../db-settings";
-import {ObjectId, WithId} from "mongodb";
+import {ObjectId} from "mongodb";
 import {UserDb} from "../types/user.db.model";
 
 
 class UsersRepository {
 
-    public create = async (entity: UserDb): Promise<WithId<UserDb>> => {
+    public getById = async (id: string): Promise<UserDb | null> => {
+        return usersCollection.findOne({_id: new ObjectId(id)});
+    }
+
+    public create = async (entity: UserDb): Promise<string> => {
         const result = await usersCollection.insertOne(entity);
-        return {...entity, _id: result.insertedId};
+        return String(result.insertedId);
     }
 
     public remove = async (id: string): Promise<boolean> => {

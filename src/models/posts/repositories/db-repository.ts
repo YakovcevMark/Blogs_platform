@@ -6,9 +6,18 @@ import {ObjectId, WithId} from "mongodb";
 
 class PostsRepository {
 
-    public create = async (entity: PostViewModel): Promise<WithId<PostViewModel>> => {
+    public getById = async (id: string): Promise<WithId<PostViewModel> | null> => {
+        const entity = await postsCollection.findOne({_id: new ObjectId(id)})
+        if (!entity) {
+            return null
+        } else {
+            return entity;
+        }
+    }
+
+    public create = async (entity: PostViewModel): Promise<string> => {
         const result = await postsCollection.insertOne(entity);
-        return {...entity, _id: result.insertedId}
+        return String(result.insertedId)
     }
 
     public update = async (id: string, body: PostInputModel): Promise<boolean> => {

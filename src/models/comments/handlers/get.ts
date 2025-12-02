@@ -1,9 +1,9 @@
 import {Request, Response} from 'express'
-import {commentsService} from "../application/comments.service";
 import {CommentsQueryList} from "../types/comments.query.list";
 import {matchedData} from "express-validator";
 import {postsQueryRepository} from "../../posts/repositories/query-repo";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
+import {commentsQueryRepository} from "../repositories/query-repo";
 
 export const getCommentsHandler = async (req: Request<{ postId: string }>, res: Response) => {
     const isPersistInDb = await postsQueryRepository.isPersistInDb(req.params.postId);
@@ -12,6 +12,6 @@ export const getCommentsHandler = async (req: Request<{ postId: string }>, res: 
         return;
     }
     const queryParamsFromValidator = matchedData(req, {locations: ['query']}) as CommentsQueryList;
-    const comments = await commentsService.getAll({...req.params, ...req.query, ...queryParamsFromValidator});
+    const comments = await commentsQueryRepository.getAll({...req.params, ...req.query, ...queryParamsFromValidator});
     res.send(comments)
 }

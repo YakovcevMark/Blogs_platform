@@ -1,5 +1,5 @@
 import {commentsCollection} from "../../../db-settings";
-import {ObjectId, WithId} from "mongodb";
+import {ObjectId} from "mongodb";
 import {CommentDb} from "../types/comment.db.model";
 import {RequestEntityId} from "../../../core/types";
 import {CommentInputModel} from "../types/comment.input.model";
@@ -7,9 +7,9 @@ import {CommentInputModel} from "../types/comment.input.model";
 
 class CommentsRepository {
 
-    public create = async (entity: CommentDb): Promise<WithId<CommentDb>> => {
+    public create = async (entity: CommentDb): Promise<string> => {
         const result = await commentsCollection.insertOne(entity);
-        return {...entity, _id: result.insertedId};
+        return String(result.insertedId);
     }
 
     public update = async ({body, id}: RequestEntityId & { body: CommentInputModel }): Promise<boolean> => {

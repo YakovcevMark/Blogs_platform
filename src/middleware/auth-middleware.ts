@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from 'express';
 import {HTTP_STATUS_CODES} from "../core/enums/http-status-codes";
-import {JwtService} from "../core/application/jwtService";
+import {JwtService} from "../core/application/jwt.service";
 import {usersQueryRepository} from "../models/users/repositories/query-repo";
 
 

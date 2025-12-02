@@ -25,6 +25,6 @@ export async function connectToDatabase() {
         console.log(`Data base name: ${db_name}`);
     } catch (error) {
         await client.close();
-        throw new Error(`Can't connected to db with url:${mongo_url}`);
+        console.log(`Can't connected to db with url:${mongo_url}`);
     }
 }

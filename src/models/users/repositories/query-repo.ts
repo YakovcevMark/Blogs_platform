@@ -8,9 +8,21 @@ import {getDbFilters} from "../../../core/utils/get-db-filters";
 import {UserDb} from "../types/user.db.model";
 import {getMongoViewModel} from "../../../core/utils/get-view-model";
 import {RequestEntityId} from "../../../core/types";
+import {getPagesCount} from "../../../core/utils/get-pages-count";
+import {PaginatorOutput} from "../../../core/types/paginator.output";
 
 
 export class UsersQueryRepository {
+
+    static getViewModel = (user: WithId<UserDb>): UserViewModel => {
+        const userDB = getMongoViewModel(user)
+        return {
+            id: userDB.id,
+            email: userDB.email,
+            login: userDB.login,
+            createdAt: userDB.createdAt,
+        }
+    }
 
     private getListFilter = (params: Pick<UsersQueryList, 'searchLoginTerm' | 'searchEmailTerm'> & {
         isStrictEqual?: boolean
@@ -22,15 +34,25 @@ export class UsersQueryRepository {
         ])
     }
 
-    public getAll = async (params: UsersQueryList): Promise<WithId<UserDb>[]> => {
+    public getAll = async (params: UsersQueryList): Promise<PaginatorOutput<UserViewModel>> => {
         const {searchLoginTerm, searchEmailTerm, sortBy, sortDirection, pageSize, pageNumber} = params;
 
-        return await usersCollection
+        const items = await usersCollection
             .find(this.getListFilter({searchLoginTerm, searchEmailTerm, isStrictEqual: false}))
             .sort(sortBy, getSortDbDirection(sortDirection))
             .skip(getSkipDbValue({pageSize, pageNumber}))
             .limit(pageSize)
             .toArray()
+
+        const totalCount = await this.getCount({searchEmailTerm, searchLoginTerm})
+
+        return {
+            pageSize,
+            items: items.map(UsersQueryRepository.getViewModel),
+            page: pageNumber,
+            pagesCount: getPagesCount({pageSize, totalCount}),
+            totalCount
+        }
     }
 
     public getById = async (params: RequestEntityId): Promise<UserViewModel | null> => {
@@ -58,27 +80,21 @@ export class UsersQueryRepository {
         return count > 0;
     }
 
-    public getUserByLoginOrEmail = async (loginOrEmail: string): Promise<WithId<UserDb> | null> => {
-        return await usersCollection.findOne(this.getListFilter({
+    public getUserByLoginOrEmail = async (loginOrEmail: string): Promise<UserViewModel | null> => {
+        const user = await usersCollection.findOne(this.getListFilter({
             searchLoginTerm: loginOrEmail,
             searchEmailTerm: loginOrEmail,
             isStrictEqual: true
         }));
+        if (!user) return null
+        return UsersQueryRepository.getViewModel(user);
     }
 
     public clearDB = async () => {
         await usersCollection.deleteMany()
     }
 
-    static getViewModel = (user: WithId<UserDb>): UserViewModel => {
-        const userDB = getMongoViewModel(user)
-        return {
-            id: userDB.id,
-            email: userDB.email,
-            login: userDB.login,
-            createdAt: userDB.createdAt,
-        }
-    }
+
 }
 
 
