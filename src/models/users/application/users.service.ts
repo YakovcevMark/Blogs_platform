@@ -1,10 +1,12 @@
 import {UserViewModel} from "../types/user.view.model";
-import {usersRepository} from "../repositories/repo";
+import {UsersRepository} from "../repositories/repo";
 import {UserDb} from "../types/user.db.model";
 import {UserInputModel} from "../types/user.input.model";
 import {BcryptService} from "../../../core/application/bcrypt.service";
 
-class UsersService {
+export class UsersService {
+    constructor(protected usersRepository: UsersRepository) {
+    }
 
     public create = async (body: UserInputModel): Promise<string> => {
         const hashedPassword = await BcryptService.genHashedPassword(body.password);
@@ -14,16 +16,20 @@ class UsersService {
             password: hashedPassword,
             email: body.email,
             login: body.login,
+            emailConformation: {
+                codes: [],
+                isConfirmed: true,
+            }
         }
 
-        return await usersRepository.create(entity);
+        return await this.usersRepository.create(entity);
     }
 
     public checkCredentials = async ({user, bodyPassword}: {
         user: UserViewModel,
         bodyPassword: string
     }): Promise<boolean> => {
-        const userDB = await usersRepository.getById(user.id)
+        const userDB = await this.usersRepository.getById(user.id)
         if (!userDB) return false
         return await BcryptService.comparePasswords({
             userPassword: userDB.password,
@@ -32,17 +38,11 @@ class UsersService {
     }
 
     public remove = async (id: string): Promise<boolean> => {
-        return await usersRepository.remove(id);
+        return await this.usersRepository.remove(id);
     }
 
     public clearDB = async () => {
-        return await usersRepository.clearDB();
+        return await this.usersRepository.clearDB();
     }
 
-}
-
-const usersService = new UsersService();
-
-export {
-    usersService
 }

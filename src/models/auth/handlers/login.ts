@@ -1,9 +1,9 @@
 import {Request, Response} from "express";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
-import {LoginInputModel} from "../types/login,input.model";
+import {LoginInputModel} from "../types/login.input.model";
 import {JwtService} from "../../../core/application/jwt.service";
 import {usersQueryRepository} from "../../users/repositories/query-repo";
-import {usersService} from "../../users/application/users.service";
+import {usersService} from "../../../core/index";
 
 export const loginHandler = async (req: Request<{}, LoginInputModel>, res: Response) => {
     try {

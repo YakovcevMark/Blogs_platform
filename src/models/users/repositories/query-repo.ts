@@ -65,6 +65,14 @@ export class UsersQueryRepository {
 
     }
 
+    public getByCode = async (code: string): Promise<UserViewModel | null> => {
+        const user =  await usersCollection.findOne({'emailConformation.codes.code': code});
+        if (!user) {
+            return null;
+        }
+        return UsersQueryRepository.getViewModel(user);
+    }
+
     public getCount = async (params: Partial<Pick<UsersQueryList, 'searchLoginTerm' | 'searchEmailTerm'>> & {
         isValidation?: boolean
     }): Promise<number> => {

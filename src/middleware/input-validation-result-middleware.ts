@@ -4,11 +4,15 @@ import {HTTP_STATUS_CODES} from "../core/enums/http-status-codes";
 import {FieldValidationError} from "express-validator/lib/base";
 import {FieldError} from "../core/types/error-response-type";
 
-const formatErrors = (error: FieldValidationError): FieldError => ({
+export const formatErrors = (error: FieldValidationError): FieldError => ({
     field: error.path,  // Поле с ошибкой
     message: error.msg,  // Сообщение ошибки
 });
-
+export const getErrorRespond = (errors:FieldError[]) => {
+    return {
+        errorsMessages:errors
+    }
+}
 export const inputValidationResultMiddleware = (
     req: Request,
     res: Response,
@@ -19,7 +23,7 @@ export const inputValidationResultMiddleware = (
         .array({ onlyFirstError: true });
 
     if (errors.length) {
-        return res.status(HTTP_STATUS_CODES.CLIENT_ERROR_400).json({errorsMessages: errors});
+        return res.status(HTTP_STATUS_CODES.CLIENT_ERROR_400).json(getErrorRespond(errors));
     }
 
     next(); // Если ошибок нет, передаём управление дальше

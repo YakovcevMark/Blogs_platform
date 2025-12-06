@@ -6,11 +6,11 @@ import {postsRouter} from "./models/posts/routes";
 import {connectToDatabase} from "./db-settings";
 import {usersRouter} from "./models/users/routes";
 import {authRouter} from "./models/auth/routes";
-import {usersService} from "./models/users/application/users.service";
 import {blogsService} from "./models/blogs/application/blogs.service";
 import {postsService} from "./models/posts/application/posts.service";
 import {commentsService} from "./models/comments/application/comments.service";
 import {commentsRouter} from "./models/comments/routes";
+import {usersService} from "./core/index";
 
 export const setupApp = async (app: Express) => {
     app.use(express.json());
