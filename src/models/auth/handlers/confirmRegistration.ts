@@ -14,6 +14,7 @@ export const confirmRegistrationHandler = async (req: Request<{}, { code: string
                     [{field: 'code', message: result}],
                 )
             )
+        return
     }
 
     res

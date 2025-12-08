@@ -17,9 +17,23 @@ export class UsersRepository {
 
     public getUserByLoginOrEmail = async (loginOrEmail: string): Promise<WithId<UserDb> | null> => {
         return await usersCollection.findOne(getDbFilters<UserViewModel>([
-            {fieldName: 'login', queryParam: loginOrEmail},
-            {fieldName: 'email', queryParam: loginOrEmail}
+            {fieldName: 'login', queryParam: loginOrEmail, isStrictEqual:true},
+            {fieldName: 'email', queryParam: loginOrEmail, isStrictEqual:true}
         ]));
+    }
+
+    public isUserWithEmailExist = async (email: string): Promise<boolean> => {
+        const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
+            {fieldName: 'email', queryParam: email, isStrictEqual:true}
+        ]));
+        return count > 0;
+    }
+
+    public isUserWithLoginExist = async (login:string): Promise<boolean> => {
+        const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
+            {fieldName: 'login', queryParam: login, isStrictEqual:true},
+        ]));
+        return count > 0;
     }
 
     public confirmEmail = async (id: string): Promise<boolean> => {

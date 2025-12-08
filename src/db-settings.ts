@@ -9,7 +9,7 @@ dotenv.config();
 
 const mongo_url = process.env.MONGO_URL || 'mongodb://localhost:27017'
 const db_name = process.env.DB_NAME || 'dev'
-const client = new MongoClient(mongo_url);
+export const client = new MongoClient(mongo_url);
 const db = client.db(db_name);
 
 export const blogsCollection = db.collection<BlogViewModel>("blogs");

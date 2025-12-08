@@ -65,12 +65,18 @@ export class UsersQueryRepository {
 
     }
 
-    public getByCode = async (code: string): Promise<UserViewModel | null> => {
-        const user =  await usersCollection.findOne({'emailConformation.codes.code': code});
-        if (!user) {
-            return null;
-        }
-        return UsersQueryRepository.getViewModel(user);
+    public isUserWithEmailExist = async (email: string): Promise<boolean> => {
+        const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
+            {fieldName: 'email', queryParam: email, isStrictEqual:true}
+        ]));
+        return count > 0;
+    }
+
+    public isUserWithLoginExist = async (login:string): Promise<boolean> => {
+        const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
+            {fieldName: 'login', queryParam: login, isStrictEqual:true},
+        ]));
+        return count > 0;
     }
 
     public getCount = async (params: Partial<Pick<UsersQueryList, 'searchLoginTerm' | 'searchEmailTerm'>> & {

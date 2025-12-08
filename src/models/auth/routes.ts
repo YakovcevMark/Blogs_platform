@@ -25,6 +25,7 @@ authRouter.get('/me',
 
 authRouter.post('/registration',
     userValidationMiddleware,
+    inputValidationResultMiddleware,
     registerNewUserHandler
 )
 

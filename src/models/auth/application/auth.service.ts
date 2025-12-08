@@ -3,20 +3,28 @@ import {SmtpManager} from "../../../core/application/smtp.manager";
 import {UserDb} from "../../users/types/user.db.model";
 import {randomUUID} from "node:crypto";
 import {addHours} from "date-fns";
+import {BcryptService} from "../../../core/application/bcrypt.service";
 
 export class AuthService {
     constructor(protected usersRepository: UsersRepository, protected smtpManager: SmtpManager) {
     }
 
-    public register = async (params: { email: string, password: string, login: string }) => {
+    public register = async (params: {
+        email: string,
+        password: string,
+        login: string
+    }): Promise<string> => {
         const {login, email, password} = params;
+
+        const hashedPassword = await BcryptService.genHashedPassword(password);
+
         const code = randomUUID()
         const expired_in = addHours(new Date(), 1);
 
         const newUser: UserDb = {
             login,
             email,
-            password,
+            password: hashedPassword,
             createdAt: new Date().toISOString(),
             emailConformation: {
                 isConfirmed: false,
@@ -28,8 +36,7 @@ export class AuthService {
         }
 
         this.smtpManager.sendRegistrationCodeEmail({email, code});
-        await this.usersRepository.create(newUser);
-        return true;
+        return await this.usersRepository.create(newUser);
     }
 
     public confirmCode = async (params: {
@@ -66,13 +73,12 @@ export class AuthService {
 
     public resendEmailConfirmationCode = async (params: {
         email: string
-    }): Promise<'Not found user with that email' | 'User with given email already confirmed' | 'ok'> => {
+    }): Promise<boolean> => {
         const {email} = params;
 
         const user = await this.usersRepository.getUserByLoginOrEmail(email);
-
-        if (!user) return 'Not found user with that email'
-        if (user.emailConformation.isConfirmed) return 'User with given email already confirmed'
+        if (!user) return false
+        if (user.emailConformation.isConfirmed) return false
         const code = randomUUID()
 
         const expired_in = addHours(new Date(), 1);
@@ -84,7 +90,7 @@ export class AuthService {
         this.smtpManager.sendRegistrationCodeEmail({email, code});
 
 
-        return 'ok';
+        return true;
     }
 
 }
