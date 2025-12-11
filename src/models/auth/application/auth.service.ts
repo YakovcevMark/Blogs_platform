@@ -6,7 +6,6 @@ import {addHours} from "date-fns";
 import {BcryptService} from "../../../core/application/bcrypt.service";
 import {Result} from "../../../core/types/service-result-object";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
-import {JwtService} from "../../../core/application/jwt.service";
 
 export class AuthService {
     constructor(protected usersRepository: UsersRepository, protected smtpManager: SmtpManager) {
@@ -159,25 +158,10 @@ export class AuthService {
 
     }
 
-    public logout = async (cookieToken: string): Promise<Result> => {
-        const user = await this.usersRepository.getByRefreshToken(cookieToken);
+    public logout = async (userId:string, cookieToken: string): Promise<Result> => {
 
-        if (!user) {
-            return {
-                status: SERVICE_RESULT_CODES.NOT_FOUND,
-                errorMessage: 'invalid token',
-            }
-        }
+        await this.usersRepository.removeRefreshToken(userId, cookieToken)
 
-        const tokenPayload = await JwtService.verifyToken({token: cookieToken});
-
-        if (!tokenPayload) {
-            return {
-                status: SERVICE_RESULT_CODES.CLIENT_ERROR,
-                errorMessage: 'token has expired',
-            }
-        }
-        await this.usersRepository.removeRefreshToken(tokenPayload.userId, cookieToken)
         return {
             status: SERVICE_RESULT_CODES.OK
         }

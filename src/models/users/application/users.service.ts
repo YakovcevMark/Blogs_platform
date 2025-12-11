@@ -3,7 +3,6 @@ import {UserDb} from "../types/user.db.model";
 import {UserInputModel} from "../types/user.input.model";
 import {BcryptService} from "../../../core/application/bcrypt.service";
 import {Result} from "../../../core/types/service-result-object";
-import {formatErrors} from "../../../middleware/input-validation-result-middleware";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
 import {JwtService} from "../../../core/application/jwt.service";
 
@@ -49,7 +48,7 @@ export class UsersService {
             return {
                 status: SERVICE_RESULT_CODES.UNAUTHORIZED,
                 errorMessage: 'no such user',
-                extensions: [formatErrors({msg: 'no such user', path: 'user'})],
+                extensions: [{message: 'no such user', field: 'user'}],
                 data: null,
             }
         }
@@ -64,50 +63,33 @@ export class UsersService {
             return {
                 status: SERVICE_RESULT_CODES.UNAUTHORIZED,
                 errorMessage: 'password is incorrect',
-                extensions: [formatErrors({msg: 'password is incorrect', path: 'user'})],
+                extensions: [{message: 'password is incorrect', field: 'user'}],
                 data: null,
             }
-        } else {
-            const tokens = await this.generateTokens(String(userDB._id));
-            await this.usersRepository.addRefreshToken(String(userDB._id), tokens.refreshToken)
-            return {
-                status: SERVICE_RESULT_CODES.OK,
-                data: tokens,
-            }
+        }
+
+        const tokens = await this.generateTokens(String(userDB._id));
+        await this.usersRepository.addRefreshToken(String(userDB._id), tokens.refreshToken)
+        return {
+            status: SERVICE_RESULT_CODES.OK,
+            data: tokens,
         }
 
 
     }
 
 
-    public refreshToken = async (cookieToken: string): Promise<Result<{
+    public refreshToken = async (userId: string, cookieToken:string): Promise<Result<{
         accessToken: string,
         refreshToken: string
     } | null>> => {
-        const user = await this.usersRepository.getByRefreshToken(cookieToken);
 
-        if (!user) {
-            return {
-                status: SERVICE_RESULT_CODES.NOT_FOUND,
-                errorMessage: 'invalid token',
-            }
-        }
+        const tokens = await this.generateTokens(userId);
 
-        const tokenPayload = await JwtService.verifyToken({token: cookieToken});
-
-        if (!tokenPayload) {
-            return {
-                status: SERVICE_RESULT_CODES.CLIENT_ERROR,
-                errorMessage: 'token has expired',
-            }
-        }
-
-        const userId = tokenPayload.userId;
-
-        const tokens = await this.generateTokens(tokenPayload.userId);
-
-        await this.usersRepository.removeRefreshToken(userId, cookieToken);
-        await this.usersRepository.addRefreshToken(userId, tokens.refreshToken);
+        await Promise.all([
+            this.usersRepository.removeRefreshToken(userId, cookieToken),
+            this.usersRepository.addRefreshToken(userId, tokens.refreshToken)
+        ]);
 
         return {
             status: SERVICE_RESULT_CODES.OK,

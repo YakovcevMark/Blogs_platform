@@ -104,6 +104,12 @@ export class UsersQueryRepository {
         return UsersQueryRepository.getViewModel(user);
     }
 
+    public getByRefreshToken = async (refreshToken: string): Promise<UserViewModel | null> => {
+        const user =  await usersCollection.findOne({'refreshTokens': refreshToken});
+        if (!user) return null
+        return UsersQueryRepository.getViewModel(user);
+    }
+
     public clearDB = async () => {
         await usersCollection.deleteMany()
     }

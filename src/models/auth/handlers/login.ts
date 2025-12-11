@@ -20,9 +20,9 @@ export const loginHandler = async (req: Request<{}, LoginInputModel>, res: Respo
             .send({
                 accessToken: result.data?.accessToken,
             })
+        return
 
-    } else {
-        res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401)
     }
+    res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401)
 
 }

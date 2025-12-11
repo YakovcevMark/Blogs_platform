@@ -6,7 +6,8 @@ import {REFRESH_TOKEN_COOKIE_NAME} from "../../../core/constants/cookieNames";
 
 export const refreshTokenHandler = async (req: Request, res: Response) => {
     const token = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
-    const result = await usersService.refreshToken(token)
+
+    const result = await usersService.refreshToken(req.userId!, token)
 
     if (result.status === SERVICE_RESULT_CODES.OK) {
 
@@ -16,9 +17,9 @@ export const refreshTokenHandler = async (req: Request, res: Response) => {
             .send({
                 accessToken: result.data?.accessToken,
             })
+        return
 
-    } else {
-        res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401)
     }
+    res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401)
 
 }

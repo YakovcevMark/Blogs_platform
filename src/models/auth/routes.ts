@@ -11,6 +11,7 @@ import {emailValidation, stringValidation} from "../../core/validation";
 import {registrationEmailResendHandler} from "./handlers/registrationEmailResendHandler";
 import {refreshTokenHandler} from "./handlers/refreshToken";
 import {logoutHandler} from "./handlers/logout";
+import {checkRefreshTokenMiddleware} from "../../middleware/check-refresh-token-middleware";
 
 const authRouter = Router()
 
@@ -44,10 +45,12 @@ authRouter.post('/registration-email-resending',
 )
 
 authRouter.post('/refresh-token',
+    checkRefreshTokenMiddleware,
     refreshTokenHandler,
 )
 
 authRouter.post('/logout',
+    checkRefreshTokenMiddleware,
     logoutHandler,
 )
 
