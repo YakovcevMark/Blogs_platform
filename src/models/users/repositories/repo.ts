@@ -15,23 +15,27 @@ export class UsersRepository {
         return await usersCollection.findOne({'emailConformation.codes.code': code});
     }
 
+    public getByRefreshToken = async (refreshToken: string): Promise<WithId<UserDb> | null> => {
+        return await usersCollection.findOne({'refreshTokens': refreshToken});
+    }
+
     public getUserByLoginOrEmail = async (loginOrEmail: string): Promise<WithId<UserDb> | null> => {
         return await usersCollection.findOne(getDbFilters<UserViewModel>([
-            {fieldName: 'login', queryParam: loginOrEmail, isStrictEqual:true},
-            {fieldName: 'email', queryParam: loginOrEmail, isStrictEqual:true}
+            {fieldName: 'login', queryParam: loginOrEmail, isStrictEqual: true},
+            {fieldName: 'email', queryParam: loginOrEmail, isStrictEqual: true}
         ]));
     }
 
     public isUserWithEmailExist = async (email: string): Promise<boolean> => {
         const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
-            {fieldName: 'email', queryParam: email, isStrictEqual:true}
+            {fieldName: 'email', queryParam: email, isStrictEqual: true}
         ]));
         return count > 0;
     }
 
-    public isUserWithLoginExist = async (login:string): Promise<boolean> => {
+    public isUserWithLoginExist = async (login: string): Promise<boolean> => {
         const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
-            {fieldName: 'login', queryParam: login, isStrictEqual:true},
+            {fieldName: 'login', queryParam: login, isStrictEqual: true},
         ]));
         return count > 0;
     }
@@ -52,7 +56,7 @@ export class UsersRepository {
 
         const response = await usersCollection.updateOne({_id: new ObjectId(id)}, {
             $push: {
-                'emailConformation.codes':{
+                'emailConformation.codes': {
                     code,
                     expired_in
                 }
@@ -72,6 +76,25 @@ export class UsersRepository {
         return response.deletedCount > 0
     }
 
+    public addRefreshToken = async (id: string, token: string): Promise<boolean> => {
+        const response = await usersCollection.updateOne({_id: new ObjectId(id)}, {
+            $addToSet: {
+                'refreshTokens': token
+            },
+        });
+
+        return response.modifiedCount > 0
+    }
+
+    public removeRefreshToken = async (id:string, token: string): Promise<boolean> => {
+        const response = await usersCollection.updateOne({_id: new ObjectId(id)}, {
+            $pull: {
+                'refreshTokens': token
+            },
+        });
+
+        return response.modifiedCount > 0
+    }
 
     public clearDB = async () => {
         await usersCollection.deleteMany()

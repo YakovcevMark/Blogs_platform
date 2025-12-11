@@ -13,4 +13,5 @@ export type UserDb = {
         codes: Code[]
         isConfirmed: boolean;
     }
+    refreshTokens: string[]
 }

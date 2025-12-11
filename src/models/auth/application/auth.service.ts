@@ -6,6 +6,7 @@ import {addHours} from "date-fns";
 import {BcryptService} from "../../../core/application/bcrypt.service";
 import {Result} from "../../../core/types/service-result-object";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
+import {JwtService} from "../../../core/application/jwt.service";
 
 export class AuthService {
     constructor(protected usersRepository: UsersRepository, protected smtpManager: SmtpManager) {
@@ -54,7 +55,8 @@ export class AuthService {
                     code,
                     expired_in
                 }]
-            }
+            },
+            refreshTokens: [],
         }
 
         this.smtpManager.sendRegistrationCodeEmail({email, code});
@@ -123,13 +125,13 @@ export class AuthService {
         if (!user) return {
             status: SERVICE_RESULT_CODES.CLIENT_ERROR,
             errorMessage: 'No user found with given email',
-            extensions:[{field:'email', message:'No user found with given email'}],
+            extensions: [{field: 'email', message: 'No user found with given email'}],
         }
 
         if (user.emailConformation.isConfirmed) return {
             status: SERVICE_RESULT_CODES.CLIENT_ERROR,
             errorMessage: 'Email has already confirmed',
-            extensions:[{field:'email', message:'Email has already confirmed'}],
+            extensions: [{field: 'email', message: 'Email has already confirmed'}],
         }
 
         const code = randomUUID()
@@ -157,4 +159,27 @@ export class AuthService {
 
     }
 
+    public logout = async (cookieToken: string): Promise<Result> => {
+        const user = await this.usersRepository.getByRefreshToken(cookieToken);
+
+        if (!user) {
+            return {
+                status: SERVICE_RESULT_CODES.NOT_FOUND,
+                errorMessage: 'invalid token',
+            }
+        }
+
+        const tokenPayload = await JwtService.verifyToken({token: cookieToken});
+
+        if (!tokenPayload) {
+            return {
+                status: SERVICE_RESULT_CODES.CLIENT_ERROR,
+                errorMessage: 'token has expired',
+            }
+        }
+        await this.usersRepository.removeRefreshToken(tokenPayload.userId, cookieToken)
+        return {
+            status: SERVICE_RESULT_CODES.OK
+        }
+    }
 }

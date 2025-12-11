@@ -17,6 +17,10 @@ export const getMeHandler = async (req: Request, res: Response) => {
 
     res
         .status(HTTP_STATUS_CODES.OK_200)
-        .send(user)
+        .send({
+            email:user.email,
+            login:user.login,
+            userId:user.id,
+        })
 
 }

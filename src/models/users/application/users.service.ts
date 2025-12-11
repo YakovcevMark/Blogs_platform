@@ -11,6 +11,15 @@ export class UsersService {
     constructor(protected usersRepository: UsersRepository) {
     }
 
+    private generateTokens = async (userId: string) => {
+        const accessToken = await JwtService.createJWT(userId);
+        const refreshToken = await JwtService.createJWTRefreshToken(userId);
+        return {
+            accessToken,
+            refreshToken
+        }
+    }
+
     public create = async (body: UserInputModel): Promise<string> => {
         const hashedPassword = await BcryptService.genHashedPassword(body.password);
 
@@ -22,7 +31,8 @@ export class UsersService {
             emailConformation: {
                 codes: [],
                 isConfirmed: true,
-            }
+            },
+            refreshTokens: []
         }
 
         return await this.usersRepository.create(entity);
@@ -31,7 +41,7 @@ export class UsersService {
     public checkCredentials = async ({userLoginOrEmail, bodyPassword}: {
         userLoginOrEmail: string,
         bodyPassword: string
-    }): Promise<Result<{ accessToken:string } | null>> => {
+    }): Promise<Result<{ accessToken: string, refreshToken: string } | null>> => {
 
         const userDB = await this.usersRepository.getUserByLoginOrEmail(userLoginOrEmail)
 
@@ -58,15 +68,54 @@ export class UsersService {
                 data: null,
             }
         } else {
-            const accessToken =  await JwtService.createJWT(String(userDB._id));
+            const tokens = await this.generateTokens(String(userDB._id));
+            await this.usersRepository.addRefreshToken(String(userDB._id), tokens.refreshToken)
             return {
                 status: SERVICE_RESULT_CODES.OK,
-                data: { accessToken },
+                data: tokens,
             }
         }
 
 
     }
+
+
+    public refreshToken = async (cookieToken: string): Promise<Result<{
+        accessToken: string,
+        refreshToken: string
+    } | null>> => {
+        const user = await this.usersRepository.getByRefreshToken(cookieToken);
+
+        if (!user) {
+            return {
+                status: SERVICE_RESULT_CODES.NOT_FOUND,
+                errorMessage: 'invalid token',
+            }
+        }
+
+        const tokenPayload = await JwtService.verifyToken({token: cookieToken});
+
+        if (!tokenPayload) {
+            return {
+                status: SERVICE_RESULT_CODES.CLIENT_ERROR,
+                errorMessage: 'token has expired',
+            }
+        }
+
+        const userId = tokenPayload.userId;
+
+        const tokens = await this.generateTokens(tokenPayload.userId);
+
+        await this.usersRepository.removeRefreshToken(userId, cookieToken);
+        await this.usersRepository.addRefreshToken(userId, tokens.refreshToken);
+
+        return {
+            status: SERVICE_RESULT_CODES.OK,
+            data: tokens,
+        }
+
+    }
+
 
     public remove = async (id: string): Promise<boolean> => {
         return await this.usersRepository.remove(id);

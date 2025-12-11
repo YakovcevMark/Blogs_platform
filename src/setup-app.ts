@@ -11,9 +11,11 @@ import {postsService} from "./models/posts/application/posts.service";
 import {commentsService} from "./models/comments/application/comments.service";
 import {commentsRouter} from "./models/comments/routes";
 import {usersService} from "./core/index";
+import cookieParser from "cookie-parser";
 
 export const setupApp = async (app: Express) => {
     app.use(express.json());
+    app.use(cookieParser());
 
     await connectToDatabase();
 
