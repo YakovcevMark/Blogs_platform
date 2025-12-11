@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import {UserViewModel} from "../../models/users/types/user.view.model";
 
 const secret = process.env.JWT_SECRET || '123';
 
@@ -8,9 +7,8 @@ type JWTPayload = {
 }
 
 export class JwtService {
-
-    static createJWT = async (user: UserViewModel): Promise<string> => {
-        return jwt.sign({userId: user.id}, secret, {expiresIn: "1d"});
+    static createJWT = async (userId: string): Promise<string> => {
+        return jwt.sign({ userId }, secret, {expiresIn: "1d"});
     }
 
     static verifyToken = async ({token}: { token: string }): Promise<JWTPayload | null> => {

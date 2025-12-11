@@ -13,6 +13,7 @@ export const createPostByBlogIdHandler = async (req: Request<{
 
     if (!blog) {
         res.sendStatus(HTTP_STATUS_CODES.NOT_FOUND_404);
+        return
     }
 
     const id = await postsService.create({...req.body, blogId: req.params.blogId}, blog!);

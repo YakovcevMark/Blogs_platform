@@ -1,8 +1,11 @@
-import {UserViewModel} from "../types/user.view.model";
 import {UsersRepository} from "../repositories/repo";
 import {UserDb} from "../types/user.db.model";
 import {UserInputModel} from "../types/user.input.model";
 import {BcryptService} from "../../../core/application/bcrypt.service";
+import {Result} from "../../../core/types/service-result-object";
+import {formatErrors} from "../../../middleware/input-validation-result-middleware";
+import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
+import {JwtService} from "../../../core/application/jwt.service";
 
 export class UsersService {
     constructor(protected usersRepository: UsersRepository) {
@@ -25,16 +28,44 @@ export class UsersService {
         return await this.usersRepository.create(entity);
     }
 
-    public checkCredentials = async ({user, bodyPassword}: {
-        user: UserViewModel,
+    public checkCredentials = async ({userLoginOrEmail, bodyPassword}: {
+        userLoginOrEmail: string,
         bodyPassword: string
-    }): Promise<boolean> => {
-        const userDB = await this.usersRepository.getById(user.id)
-        if (!userDB) return false
-        return await BcryptService.comparePasswords({
+    }): Promise<Result<{ accessToken:string } | null>> => {
+
+        const userDB = await this.usersRepository.getUserByLoginOrEmail(userLoginOrEmail)
+
+        if (!userDB) {
+            return {
+                status: SERVICE_RESULT_CODES.UNAUTHORIZED,
+                errorMessage: 'no such user',
+                extensions: [formatErrors({msg: 'no such user', path: 'user'})],
+                data: null,
+            }
+        }
+
+
+        const isPasswordCorrect = await BcryptService.comparePasswords({
             userPassword: userDB.password,
             bodyPassword
         });
+
+        if (!isPasswordCorrect) {
+            return {
+                status: SERVICE_RESULT_CODES.UNAUTHORIZED,
+                errorMessage: 'password is incorrect',
+                extensions: [formatErrors({msg: 'password is incorrect', path: 'user'})],
+                data: null,
+            }
+        } else {
+            const accessToken =  await JwtService.createJWT(String(userDB._id));
+            return {
+                status: SERVICE_RESULT_CODES.OK,
+                data: { accessToken },
+            }
+        }
+
+
     }
 
     public remove = async (id: string): Promise<boolean> => {

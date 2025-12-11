@@ -12,7 +12,7 @@ export const updateCommentHandler = async (req: Request<{ commentId: string }, C
         return;
     }
 
-    if (comment.commentatorInfo.userId !== req.user!.id) {
+    if (comment.commentatorInfo.userId !== req.userId) {
         res.sendStatus(HTTP_STATUS_CODES.FORBIDDEN_403)
         return;
     }

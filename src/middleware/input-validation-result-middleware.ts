@@ -4,11 +4,11 @@ import {HTTP_STATUS_CODES} from "../core/enums/http-status-codes";
 import {FieldValidationError} from "express-validator/lib/base";
 import {FieldError} from "../core/types/error-response-type";
 
-export const formatErrors = (error: FieldValidationError): FieldError => ({
+export const formatErrors = (error: Pick<FieldValidationError, 'msg' | 'path'>): FieldError => ({
     field: error.path,  // Поле с ошибкой
     message: error.msg,  // Сообщение ошибки
 });
-export const getErrorRespond = (errors:FieldError[]) => {
+export const getErrorRespond = (errors?:FieldError[]) => {
     return {
         errorsMessages:errors
     }

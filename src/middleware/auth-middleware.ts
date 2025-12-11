@@ -1,8 +1,6 @@
 import {NextFunction, Request, Response} from 'express';
 import {HTTP_STATUS_CODES} from "../core/enums/http-status-codes";
 import {JwtService} from "../core/application/jwt.service";
-import {usersQueryRepository} from "../models/users/repositories/query-repo";
-
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -14,13 +12,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             throw new Error('invalid token');
         }
 
-        const user = await usersQueryRepository.getById({id: jwtPayload.userId})
-
-        if (!user) {
-            throw new Error('no user found');
-        }
-
-        req.user = user;
+        req.userId = jwtPayload?.userId;
         next();
     } catch (err) {
         res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);

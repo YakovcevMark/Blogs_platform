@@ -12,6 +12,7 @@ export const getPostsByBlogIdHandler = async (req: Request<{ blogId: string }>, 
 
     if (!isBlogPersistInDb) {
         res.sendStatus(HTTP_STATUS_CODES.NOT_FOUND_404);
+        return
     }
 
     const blogs = await postsQueryRepository.getAll({...queryParamsFromValidator, blogId: req.params.blogId});
