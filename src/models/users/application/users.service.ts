@@ -5,9 +5,10 @@ import {BcryptService} from "../../../core/application/bcrypt.service";
 import {Result} from "../../../core/types/service-result-object";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
 import {JwtService} from "../../../core/application/jwt.service";
+import {RefreshTokensService} from "../../../core/application/refrest-tokens.service";
 
 export class UsersService {
-    constructor(protected usersRepository: UsersRepository) {
+    constructor(protected usersRepository: UsersRepository, protected refreshTokensService: RefreshTokensService) {
     }
 
     private generateTokens = async (userId: string) => {
@@ -69,7 +70,7 @@ export class UsersService {
         }
 
         const tokens = await this.generateTokens(String(userDB._id));
-        await this.usersRepository.addRefreshToken(String(userDB._id), tokens.refreshToken)
+
         return {
             status: SERVICE_RESULT_CODES.OK,
             data: tokens,
@@ -79,17 +80,14 @@ export class UsersService {
     }
 
 
-    public refreshToken = async (userId: string, cookieToken:string): Promise<Result<{
+    public refreshToken = async (userId: string, cookieToken: string): Promise<Result<{
         accessToken: string,
         refreshToken: string
     } | null>> => {
 
         const tokens = await this.generateTokens(userId);
 
-        await Promise.all([
-            this.usersRepository.removeRefreshToken(userId, cookieToken),
-            this.usersRepository.addRefreshToken(userId, tokens.refreshToken)
-        ]);
+        await this.refreshTokensService.addToBlackList(cookieToken);
 
         return {
             status: SERVICE_RESULT_CODES.OK,

@@ -1,8 +1,8 @@
 import {NextFunction, Request, Response} from "express";
 import {JwtService} from "../core/application/jwt.service";
 import {HTTP_STATUS_CODES} from "../core/enums/http-status-codes";
-import {usersQueryRepository} from "../models/users/repositories/query-repo";
 import {REFRESH_TOKEN_COOKIE_NAME} from "../core/constants/cookieNames";
+import {refreshTokensQueryRepository} from "../core/index";
 
 export const checkRefreshTokenMiddleware = async (
     req: Request,
@@ -16,12 +16,12 @@ export const checkRefreshTokenMiddleware = async (
             return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
         }
 
-        const [user, payload] = await Promise.all([
-            usersQueryRepository.getByRefreshToken(token),
+        const [isTokenPersistInBlackList, payload] = await Promise.all([
+            refreshTokensQueryRepository.isTokenPersistInBlackList(token),
             JwtService.verifyToken({ token }),
         ]);
 
-        if (!user) {
+        if (isTokenPersistInBlackList) {
             return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
         }
 

@@ -6,9 +6,10 @@ import {addHours} from "date-fns";
 import {BcryptService} from "../../../core/application/bcrypt.service";
 import {Result} from "../../../core/types/service-result-object";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
+import {RefreshTokensService} from "../../../core/application/refrest-tokens.service";
 
 export class AuthService {
-    constructor(protected usersRepository: UsersRepository, protected smtpManager: SmtpManager) {
+    constructor(protected usersRepository: UsersRepository, protected smtpManager: SmtpManager, protected refreshTokensService: RefreshTokensService) {
     }
 
     public register = async (params: {
@@ -158,9 +159,8 @@ export class AuthService {
 
     }
 
-    public logout = async (userId:string, cookieToken: string): Promise<Result> => {
-
-        await this.usersRepository.removeRefreshToken(userId, cookieToken)
+    public logout = async (cookieToken: string): Promise<Result> => {
+        await this.refreshTokensService.addToBlackList(cookieToken);
 
         return {
             status: SERVICE_RESULT_CODES.OK

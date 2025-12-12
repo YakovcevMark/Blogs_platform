@@ -4,6 +4,7 @@ import {BlogViewModel} from "./models/blogs/types/blog.view.model";
 import {PostViewModel} from "./models/posts/types/post.view.model";
 import {UserDb} from "./models/users/types/user.db.model";
 import {CommentDb} from "./models/comments/types/comment.db.model";
+import {RefreshTokenDB} from "./core/types/refresh.token.model";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ export const blogsCollection = db.collection<BlogViewModel>("blogs");
 export const postsCollection = db.collection<PostViewModel>("posts");
 export const usersCollection = db.collection<UserDb>("users");
 export const commentsCollection = db.collection<CommentDb>("comments");
+export const refreshTokensCollection = db.collection<RefreshTokenDB>("refreshTokens");
 
 export async function connectToDatabase() {
     try {
@@ -23,6 +25,14 @@ export async function connectToDatabase() {
         await client.db(db_name).command({ ping: 1 });
         console.log(`Successfully connected to database: ${mongo_url}`);
         console.log(`Data base name: ${db_name}`);
+
+        // удаляем токены в дб
+        await refreshTokensCollection.createIndex(
+            { expireAt: 1 },
+            { expireAfterSeconds: 0 }
+        );
+
+
     } catch (error) {
         await client.close();
         console.log(`Can't connected to db with url:${mongo_url}`);
