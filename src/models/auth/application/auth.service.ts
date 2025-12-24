@@ -7,9 +7,26 @@ import {BcryptService} from "../../../core/application/bcrypt.service";
 import {Result} from "../../../core/types/service-result-object";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
 import {RefreshTokensService} from "../../../core/application/refrest-tokens.service";
+import {JwtService} from "../../../core/application/jwt.service";
+import {SessionDevicesService} from "../../session-devices/application/session-device.service";
 
 export class AuthService {
-    constructor(protected usersRepository: UsersRepository, protected smtpManager: SmtpManager, protected refreshTokensService: RefreshTokensService) {
+    constructor(
+        protected usersRepository: UsersRepository,
+        protected smtpManager: SmtpManager,
+        protected refreshTokensService: RefreshTokensService,
+        protected sessionDevicesService: SessionDevicesService,
+    ) {
+    }
+
+    private generateTokens = async (userId: string, deviceId?: string) => {
+        const tokenDeviceId = deviceId ?? crypto.randomUUID();
+        const accessToken = await JwtService.createJWT(userId);
+        const refreshToken = await JwtService.createJWTRefreshToken(userId, tokenDeviceId);
+        return {
+            accessToken,
+            refreshToken
+        }
     }
 
     public register = async (params: {
@@ -159,8 +176,113 @@ export class AuthService {
 
     }
 
-    public logout = async (cookieToken: string): Promise<Result> => {
-        await this.refreshTokensService.addToBlackList(cookieToken);
+    public login = async ({userLoginOrEmail, bodyPassword, deviceName, ip, cookieToken}: {
+        userLoginOrEmail: string,
+        bodyPassword: string,
+        ip: string,
+        deviceName: string,
+        cookieToken?: string,
+    }): Promise<Result<{ accessToken: string, refreshToken: string } | null>> => {
+
+        const userDB = await this.usersRepository.getUserByLoginOrEmail(userLoginOrEmail)
+
+        if (!userDB) {
+            return {
+                status: SERVICE_RESULT_CODES.UNAUTHORIZED,
+                errorMessage: 'no such user',
+                extensions: [{message: 'no such user', field: 'user'}],
+                data: null,
+            }
+        }
+
+
+        const isPasswordCorrect = await BcryptService.comparePasswords({
+            userPassword: userDB.password,
+            bodyPassword
+        });
+
+        if (!isPasswordCorrect) {
+            return {
+                status: SERVICE_RESULT_CODES.UNAUTHORIZED,
+                errorMessage: 'password is incorrect',
+                extensions: [{message: 'password is incorrect', field: 'user'}],
+                data: null,
+            }
+        }
+
+
+        let deviceId;
+
+        if (cookieToken) {
+            const payload = await JwtService.verifyToken(cookieToken);
+            deviceId = payload?.deviceId;
+        }
+
+        const tokens = await this.generateTokens(String(userDB._id), deviceId);
+        const refreshTokenHeaderAndPayload = await JwtService.verifyToken(tokens.refreshToken);
+
+        if (deviceId) {
+            await this.sessionDevicesService.update({
+                deviceId,
+                expireAt: refreshTokenHeaderAndPayload!.exp,
+                title: deviceName,
+                ip,
+                lastActiveDate: refreshTokenHeaderAndPayload!.iat,
+                userId: String(userDB._id)
+            })
+        } else {
+            await this.sessionDevicesService.create({
+                deviceId: refreshTokenHeaderAndPayload!.deviceId,
+                expireAt: refreshTokenHeaderAndPayload!.exp,
+                title: deviceName,
+                ip,
+                lastActiveDate: refreshTokenHeaderAndPayload!.iat,
+                userId: String(userDB._id),
+            })
+        }
+
+        return {
+            status: SERVICE_RESULT_CODES.OK,
+            data: tokens,
+        }
+
+
+    }
+
+    public refreshToken = async (userId: string, cookieToken: string, deviceName: string, ip: string, deviceId: string): Promise<Result<{
+        accessToken: string,
+        refreshToken: string
+    } | null>> => {
+
+        const [tokens] = await Promise.all([
+            this.generateTokens(userId, deviceId),
+            this.refreshTokensService.addToBlackList(cookieToken),
+        ])
+
+        const refreshTokenHeaderAndPayload = await JwtService.verifyToken(tokens.refreshToken);
+
+        await this.sessionDevicesService.update({
+            deviceId,
+            expireAt: refreshTokenHeaderAndPayload!.exp,
+            title: deviceName,
+            ip,
+            lastActiveDate: refreshTokenHeaderAndPayload!.iat,
+            userId
+        })
+
+        return {
+            status: SERVICE_RESULT_CODES.OK,
+            data: tokens,
+        }
+
+    }
+
+    public logout = async (cookieToken: string, deviceId: string, userId: string): Promise<Result> => {
+
+        await Promise.all([
+            this.refreshTokensService.addToBlackList(cookieToken),
+            this.sessionDevicesService.remove(deviceId, userId)
+        ])
 
         return {
             status: SERVICE_RESULT_CODES.OK

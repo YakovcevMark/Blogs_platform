@@ -27,14 +27,17 @@ export const stringValidation = ({name, max, min}: StringValidation) => {
     return scheme;
 }
 
-export const idValidation = (props: { name?: string, type?: 'param' | 'body' } | undefined) => {
+export const idValidation = (props: { name?: string, type?: 'param' | 'body', isMongoId?:boolean  } | undefined) => {
     const name = props?.name ?? 'id'
     const type = props?.type ?? 'param'
+    const isMongoId = props?.isMongoId ?? true
     let scheme = type === 'param' ? param(name) : body(name)
+    isMongoId && (
+        scheme.isMongoId()
+    )
     return scheme
         .exists()
         .withMessage(validationMessages.required('param'))
-        .isMongoId()
         .withMessage(`${name} should be a mongoId`)
 }
 

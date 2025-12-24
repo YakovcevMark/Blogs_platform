@@ -1,16 +1,14 @@
 import {Request, Response} from "express";
-import {usersService} from "../../../core/index";
+import {authService} from "../../../core/index";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
 import {REFRESH_TOKEN_COOKIE_NAME} from "../../../core/constants/cookieNames";
 
 export const refreshTokenHandler = async (req: Request, res: Response) => {
     const token = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
-
-    const result = await usersService.refreshToken(req.userId!, token)
+    const result = await authService.refreshToken(req.userId!, token, req.headers.host!, req.ip!, req.deviceId!);
 
     if (result.status === SERVICE_RESULT_CODES.OK) {
-
         res.cookie(REFRESH_TOKEN_COOKIE_NAME, result.data?.refreshToken, {httpOnly: true, secure: true});
         res
             .status(HTTP_STATUS_CODES.OK_200)

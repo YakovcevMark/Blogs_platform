@@ -12,12 +12,14 @@ import {registrationEmailResendHandler} from "./handlers/registrationEmailResend
 import {refreshTokenHandler} from "./handlers/refreshToken";
 import {logoutHandler} from "./handlers/logout";
 import {checkRefreshTokenMiddleware} from "../../middleware/check-refresh-token-middleware";
+import {rateLimitMiddleware} from "../../middleware/rate-limit-middleware";
 
 const authRouter = Router()
 
 authRouter.post('/login',
     loginValidationMiddleware,
     inputValidationResultMiddleware,
+    rateLimitMiddleware,
     loginHandler
 )
 
@@ -29,18 +31,21 @@ authRouter.get('/me',
 authRouter.post('/registration',
     userValidationMiddleware,
     inputValidationResultMiddleware,
+    rateLimitMiddleware,
     registerNewUserHandler
 )
 
 authRouter.post('/registration-confirmation',
     stringValidation({name: 'code', min: 1}),
     inputValidationResultMiddleware,
+    rateLimitMiddleware,
     confirmRegistrationHandler,
 )
 
 authRouter.post('/registration-email-resending',
     emailValidation({name: 'email', min: 1}),
     inputValidationResultMiddleware,
+    rateLimitMiddleware,
     registrationEmailResendHandler,
 )
 

@@ -2,7 +2,7 @@ import {NextFunction, Request, Response} from "express";
 import {JwtService} from "../core/application/jwt.service";
 import {HTTP_STATUS_CODES} from "../core/enums/http-status-codes";
 import {REFRESH_TOKEN_COOKIE_NAME} from "../core/constants/cookieNames";
-import {refreshTokensQueryRepository} from "../core/index";
+import {refreshTokensQueryRepository, sessionDevicesQueryRepository} from "../core/index";
 
 export const checkRefreshTokenMiddleware = async (
     req: Request,
@@ -18,7 +18,7 @@ export const checkRefreshTokenMiddleware = async (
 
         const [isTokenPersistInBlackList, payload] = await Promise.all([
             refreshTokensQueryRepository.isTokenPersistInBlackList(token),
-            JwtService.verifyToken({ token }),
+            JwtService.verifyToken(token),
         ]);
 
         if (isTokenPersistInBlackList) {
@@ -28,8 +28,14 @@ export const checkRefreshTokenMiddleware = async (
         if (!payload) {
             return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
         }
+        const isSessionPersist = await sessionDevicesQueryRepository.isPersistInDb(payload.deviceId)
+
+        if (!isSessionPersist) {
+            return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
+        }
 
         req.userId = payload.userId;
+        req.deviceId = payload.deviceId;
 
         return next();
     } catch (e) {

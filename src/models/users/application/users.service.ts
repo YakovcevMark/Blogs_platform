@@ -2,22 +2,9 @@ import {UsersRepository} from "../repositories/repo";
 import {UserDb} from "../types/user.db.model";
 import {UserInputModel} from "../types/user.input.model";
 import {BcryptService} from "../../../core/application/bcrypt.service";
-import {Result} from "../../../core/types/service-result-object";
-import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
-import {JwtService} from "../../../core/application/jwt.service";
-import {RefreshTokensService} from "../../../core/application/refrest-tokens.service";
 
 export class UsersService {
-    constructor(protected usersRepository: UsersRepository, protected refreshTokensService: RefreshTokensService) {
-    }
-
-    private generateTokens = async (userId: string) => {
-        const accessToken = await JwtService.createJWT(userId);
-        const refreshToken = await JwtService.createJWTRefreshToken(userId);
-        return {
-            accessToken,
-            refreshToken
-        }
+    constructor(protected usersRepository: UsersRepository) {
     }
 
     public create = async (body: UserInputModel): Promise<string> => {
@@ -36,64 +23,6 @@ export class UsersService {
         }
 
         return await this.usersRepository.create(entity);
-    }
-
-    public checkCredentials = async ({userLoginOrEmail, bodyPassword}: {
-        userLoginOrEmail: string,
-        bodyPassword: string
-    }): Promise<Result<{ accessToken: string, refreshToken: string } | null>> => {
-
-        const userDB = await this.usersRepository.getUserByLoginOrEmail(userLoginOrEmail)
-
-        if (!userDB) {
-            return {
-                status: SERVICE_RESULT_CODES.UNAUTHORIZED,
-                errorMessage: 'no such user',
-                extensions: [{message: 'no such user', field: 'user'}],
-                data: null,
-            }
-        }
-
-
-        const isPasswordCorrect = await BcryptService.comparePasswords({
-            userPassword: userDB.password,
-            bodyPassword
-        });
-
-        if (!isPasswordCorrect) {
-            return {
-                status: SERVICE_RESULT_CODES.UNAUTHORIZED,
-                errorMessage: 'password is incorrect',
-                extensions: [{message: 'password is incorrect', field: 'user'}],
-                data: null,
-            }
-        }
-
-        const tokens = await this.generateTokens(String(userDB._id));
-
-        return {
-            status: SERVICE_RESULT_CODES.OK,
-            data: tokens,
-        }
-
-
-    }
-
-
-    public refreshToken = async (userId: string, cookieToken: string): Promise<Result<{
-        accessToken: string,
-        refreshToken: string
-    } | null>> => {
-
-        const tokens = await this.generateTokens(userId);
-
-        await this.refreshTokensService.addToBlackList(cookieToken);
-
-        return {
-            status: SERVICE_RESULT_CODES.OK,
-            data: tokens,
-        }
-
     }
 
 

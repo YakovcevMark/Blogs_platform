@@ -1,6 +1,6 @@
 import {RefreshTokenDB} from "../types/refresh.token.model";
 import {addMinutes} from "date-fns";
-import {RefreshTokensRepository} from "../repositories/refresh-token-db-repository";
+import {RefreshTokensRepository} from "../repositories/refresh-token/refresh-token-db-repository";
 
 export class RefreshTokensService {
 

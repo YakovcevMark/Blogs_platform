@@ -7,7 +7,7 @@ import {REFRESH_TOKEN_COOKIE_NAME} from "../../../core/constants/cookieNames";
 export const logoutHandler = async (req: Request, res: Response) => {
     const token = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
 
-    const result = await authService.logout(token)
+    const result = await authService.logout(token, req.deviceId!, req.userId!);
 
     if (result.status === SERVICE_RESULT_CODES.OK) {
 

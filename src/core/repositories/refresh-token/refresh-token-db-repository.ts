@@ -1,5 +1,5 @@
-import {RefreshTokenDB} from "../types/refresh.token.model";
-import {refreshTokensCollection} from "../../db-settings";
+import {RefreshTokenDB} from "../../types/refresh.token.model";
+import {refreshTokensCollection} from "../../../db-settings";
 
 export class RefreshTokensRepository {
 

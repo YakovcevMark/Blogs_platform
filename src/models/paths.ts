@@ -4,4 +4,5 @@ export const RoutePaths = {
     users: '/users/',
     auth: '/auth/',
     comments: '/comments/',
+    devices: '/security/devices/',
 }
