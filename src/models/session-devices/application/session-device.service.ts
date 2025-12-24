@@ -2,10 +2,12 @@ import {SessionDeviceRepository} from "../repositories/repo";
 import {SessionDeviceDB} from "../types/session-devices-db.model";
 import {Result} from "../../../core/types/service-result-object";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class SessionDevicesService {
 
-    constructor(protected sessionDeviceRepository: SessionDeviceRepository) {
+    constructor(@inject(SessionDeviceRepository) protected sessionDeviceRepository: SessionDeviceRepository) {
     }
 
     public create = async (body: SessionDeviceDB): Promise<string> => {
@@ -43,10 +45,6 @@ export class SessionDevicesService {
 
     public removeAllSessionsExceptCurrent = async (currentSessionDeviceId: string, userId:string): Promise<boolean> => {
         return await this.sessionDeviceRepository.removeAllSessionsExceptCurrent(currentSessionDeviceId, userId);
-    }
-
-    public clearDB = async () => {
-        return await this.sessionDeviceRepository.clearDB();
     }
 
 }

@@ -3,9 +3,10 @@ import {ObjectId} from "mongodb";
 import {CommentDb} from "../types/comment.db.model";
 import {RequestEntityId} from "../../../core/types";
 import {CommentInputModel} from "../types/comment.input.model";
+import {injectable} from "inversify";
 
-
-class CommentsRepository {
+@injectable()
+export class CommentsRepository {
 
     public create = async (entity: CommentDb): Promise<string> => {
         const result = await commentsCollection.insertOne(entity);
@@ -28,15 +29,4 @@ class CommentsRepository {
         return response.deletedCount > 0
     }
 
-    public clearDB = async () => {
-        await commentsCollection.deleteMany()
-    }
-
 }
-
-
-const commentsRepository = new CommentsRepository();
-
-export {
-    commentsRepository,
-};

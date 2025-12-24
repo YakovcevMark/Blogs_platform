@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
-
+import {injectable} from "inversify";
+@injectable()
 export class SmtpService {
     private transporter = nodemailer.createTransport({
         service: 'gmail',

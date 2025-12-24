@@ -1,15 +1,22 @@
-import {commentsRepository} from "../repositories/repo";
 import {CommentDb} from "../types/comment.db.model";
 import {CommentInputModel} from "../types/comment.input.model";
 import {RequestEntityId} from "../../../core/types";
 import {Result} from "../../../core/types/service-result-object";
-import {usersRepository} from "../../../core/index";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
 import {formatErrors} from "../../../middleware/input-validation-result-middleware";
-import {postsRepository} from "../../posts/repositories/db-repository";
+import {PostsRepository} from "../../posts/repositories/db-repository";
+import {inject, injectable} from "inversify";
+import {UsersRepository} from "../../users/repositories/repo";
+import {CommentsRepository} from "../repositories/repo";
 
-class CommentsService {
-
+@injectable()
+export class CommentsService {
+    constructor(
+        @inject(UsersRepository) protected usersRepository: UsersRepository,
+        @inject(PostsRepository) protected postsRepository: PostsRepository,
+        @inject(CommentsRepository) protected commentsRepository: CommentsRepository,
+    ) {
+    }
     public create = async (params: {
         userId: string,
         body: CommentInputModel,
@@ -18,7 +25,7 @@ class CommentsService {
 
         const { postId, userId, body } = params;
 
-        const post = await postsRepository.getById(postId);
+        const post = await this.postsRepository.getById(postId);
         if (!post) {
             return {
                 status: SERVICE_RESULT_CODES.NOT_FOUND,
@@ -27,7 +34,7 @@ class CommentsService {
             }
         }
 
-        const user = await usersRepository.getById(userId);
+        const user = await this.usersRepository.getById(userId);
         if (!user) {
             return {
                 status: SERVICE_RESULT_CODES.UNAUTHORIZED,
@@ -46,7 +53,7 @@ class CommentsService {
             postId
         }
 
-        const createdCommentId = await commentsRepository.create(entity);
+        const createdCommentId = await this.commentsRepository.create(entity);
 
         if (!createdCommentId) {
             return {
@@ -65,21 +72,12 @@ class CommentsService {
     public update = async (params: RequestEntityId & {
         body: CommentInputModel,
     }): Promise<boolean> => {
-        return await commentsRepository.update(params)
+        return await this.commentsRepository.update(params)
     }
 
     public remove = async (id: string): Promise<boolean> => {
-        return await commentsRepository.remove(id);
-    }
-
-    public clearDB = async () => {
-        return await commentsRepository.clearDB();
+        return await this.commentsRepository.remove(id);
     }
 
 }
 
-const commentsService = new CommentsService();
-
-export {
-    commentsService
-}

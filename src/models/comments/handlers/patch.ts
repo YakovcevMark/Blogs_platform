@@ -1,9 +1,12 @@
 import {Request, Response} from "express";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
 import {CommentInputModel} from "../types/comment.input.model";
-import {commentsService} from "../application/comments.service";
-import {commentsQueryRepository} from "../repositories/query-repo";
+import {CommentsService} from "../application/comments.service";
+import {CommentsQueryRepository} from "../repositories/query-repo";
+import {ioc} from "../../../core/index";
 
+const commentsService = ioc.get(CommentsService)
+const commentsQueryRepository = ioc.get(CommentsQueryRepository)
 export const updateCommentHandler = async (req: Request<{ commentId: string }, CommentInputModel>, res: Response) => {
     const comment = await commentsQueryRepository.getById({id: req.params.commentId});
 

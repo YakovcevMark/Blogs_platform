@@ -2,13 +2,18 @@ import {UsersRepository} from "../repositories/repo";
 import {UserDb} from "../types/user.db.model";
 import {UserInputModel} from "../types/user.input.model";
 import {BcryptService} from "../../../core/application/bcrypt.service";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class UsersService {
-    constructor(protected usersRepository: UsersRepository) {
+    constructor(
+        @inject(UsersRepository) protected usersRepository: UsersRepository,
+        @inject(BcryptService) protected bcryptService: BcryptService,
+    ) {
     }
 
     public create = async (body: UserInputModel): Promise<string> => {
-        const hashedPassword = await BcryptService.genHashedPassword(body.password);
+        const hashedPassword = await this.bcryptService.genHashedPassword(body.password);
 
         const entity: UserDb = {
             createdAt: new Date().toISOString(),
@@ -28,10 +33,6 @@ export class UsersService {
 
     public remove = async (id: string): Promise<boolean> => {
         return await this.usersRepository.remove(id);
-    }
-
-    public clearDB = async () => {
-        return await this.usersRepository.clearDB();
     }
 
 }

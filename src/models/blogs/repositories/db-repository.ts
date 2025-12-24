@@ -2,9 +2,10 @@ import {BlogViewModel} from "../types/blog.view.model";
 import {BlogInputModel} from "../types/blog.input.model";
 import {blogsCollection} from "../../../db-settings";
 import {ObjectId, WithId} from "mongodb";
+import {injectable} from "inversify";
 
-
-class BlogsRepository {
+@injectable()
+export class BlogsRepository {
 
     public getById = async (id: string): Promise<WithId<BlogViewModel> | null> => {
         return await blogsCollection.findOne({_id: new ObjectId(id)})
@@ -31,15 +32,6 @@ class BlogsRepository {
         return response.deletedCount > 0
     }
 
-    public clearDB = async () => {
-        await blogsCollection.deleteMany()
-    }
-
 }
 
 
-const blogsRepository = new BlogsRepository();
-
-export {
-    blogsRepository,
-};

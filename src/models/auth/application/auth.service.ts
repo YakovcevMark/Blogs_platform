@@ -9,20 +9,24 @@ import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
 import {RefreshTokensService} from "../../../core/application/refrest-tokens.service";
 import {JwtService} from "../../../core/application/jwt.service";
 import {SessionDevicesService} from "../../session-devices/application/session-device.service";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class AuthService {
     constructor(
-        protected usersRepository: UsersRepository,
-        protected smtpManager: SmtpManager,
-        protected refreshTokensService: RefreshTokensService,
-        protected sessionDevicesService: SessionDevicesService,
+        @inject(UsersRepository) protected usersRepository: UsersRepository,
+        @inject(SmtpManager) protected smtpManager: SmtpManager,
+        @inject(RefreshTokensService) protected refreshTokensService: RefreshTokensService,
+        @inject(SessionDevicesService) protected sessionDevicesService: SessionDevicesService,
+        @inject(JwtService) protected jwtService: JwtService,
+        @inject(BcryptService) protected bcryptService: BcryptService,
     ) {
     }
 
     private generateTokens = async (userId: string, deviceId?: string) => {
         const tokenDeviceId = deviceId ?? crypto.randomUUID();
-        const accessToken = await JwtService.createJWT(userId);
-        const refreshToken = await JwtService.createJWTRefreshToken(userId, tokenDeviceId);
+        const accessToken = await this.jwtService.createJWT(userId);
+        const refreshToken = await this.jwtService.createJWTRefreshToken(userId, tokenDeviceId);
         return {
             accessToken,
             refreshToken
@@ -56,7 +60,7 @@ export class AuthService {
             }
         }
 
-        const hashedPassword = await BcryptService.genHashedPassword(password);
+        const hashedPassword = await this.bcryptService.genHashedPassword(password);
 
         const code = randomUUID()
         const expired_in = addHours(new Date(), 1);
@@ -196,7 +200,7 @@ export class AuthService {
         }
 
 
-        const isPasswordCorrect = await BcryptService.comparePasswords({
+        const isPasswordCorrect = await this.bcryptService.comparePasswords({
             userPassword: userDB.password,
             bodyPassword
         });
@@ -214,12 +218,12 @@ export class AuthService {
         let deviceId;
 
         if (cookieToken) {
-            const payload = await JwtService.verifyToken(cookieToken);
+            const payload = await this.jwtService.verifyToken(cookieToken);
             deviceId = payload?.deviceId;
         }
 
         const tokens = await this.generateTokens(String(userDB._id), deviceId);
-        const refreshTokenHeaderAndPayload = await JwtService.verifyToken(tokens.refreshToken);
+        const refreshTokenHeaderAndPayload = await this.jwtService.verifyToken(tokens.refreshToken);
 
         if (deviceId) {
             await this.sessionDevicesService.update({
@@ -259,7 +263,7 @@ export class AuthService {
             this.refreshTokensService.addToBlackList(cookieToken),
         ])
 
-        const refreshTokenHeaderAndPayload = await JwtService.verifyToken(tokens.refreshToken);
+        const refreshTokenHeaderAndPayload = await this.jwtService.verifyToken(tokens.refreshToken);
 
         await this.sessionDevicesService.update({
             deviceId,

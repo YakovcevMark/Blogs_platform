@@ -1,12 +1,15 @@
 import {Request, Response} from "express";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
 import {CommentInputModel} from "../types/comment.input.model";
-import {commentsService} from "../application/comments.service";
-import {commentsQueryRepository} from "../repositories/query-repo";
+import {CommentsService} from "../application/comments.service";
+import {CommentsQueryRepository} from "../repositories/query-repo";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
 import {getHttpStatusCodeFromResultStatusCode} from "../../../core/utils/get-http-status-code-from-result-status-code";
 import {getErrorRespond} from "../../../middleware/input-validation-result-middleware";
+import {ioc} from "../../../core/index";
 
+const commentsService = ioc.get(CommentsService)
+const commentsQueryRepository = ioc.get(CommentsQueryRepository)
 export const createCommentHandler = async (req: Request<{ postId: string }, CommentInputModel>, res: Response) => {
     const result = await commentsService.create({postId: req.params.postId, body: req.body, userId: req.userId!});
 

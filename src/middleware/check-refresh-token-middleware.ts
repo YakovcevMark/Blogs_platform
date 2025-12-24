@@ -2,7 +2,13 @@ import {NextFunction, Request, Response} from "express";
 import {JwtService} from "../core/application/jwt.service";
 import {HTTP_STATUS_CODES} from "../core/enums/http-status-codes";
 import {REFRESH_TOKEN_COOKIE_NAME} from "../core/constants/cookieNames";
-import {refreshTokensQueryRepository, sessionDevicesQueryRepository} from "../core/index";
+import {ioc} from "../core/index";
+import {RefreshTokensQueryRepository} from "../core/repositories/refresh-token/refresh-token-db.query-repository";
+import {SessionDevicesQueryRepository} from "../models/session-devices/repositories/query-repo";
+
+const jwtService = ioc.get(JwtService);
+const refreshTokensQueryRepository = ioc.get(RefreshTokensQueryRepository)
+const sessionDevicesQueryRepository = ioc.get(SessionDevicesQueryRepository)
 
 export const checkRefreshTokenMiddleware = async (
     req: Request,
@@ -18,7 +24,7 @@ export const checkRefreshTokenMiddleware = async (
 
         const [isTokenPersistInBlackList, payload] = await Promise.all([
             refreshTokensQueryRepository.isTokenPersistInBlackList(token),
-            JwtService.verifyToken(token),
+            jwtService.verifyToken(token),
         ]);
 
         if (isTokenPersistInBlackList) {

@@ -10,8 +10,9 @@ import {getMongoViewModel} from "../../../core/utils/get-view-model";
 import {RequestEntityId} from "../../../core/types";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
+import {injectable} from "inversify";
 
-
+@injectable()
 export class UsersQueryRepository {
 
     static getViewModel = (user: WithId<UserDb>): UserViewModel => {
@@ -110,16 +111,6 @@ export class UsersQueryRepository {
         return UsersQueryRepository.getViewModel(user);
     }
 
-    public clearDB = async () => {
-        await usersCollection.deleteMany()
-    }
-
-
 }
 
 
-const usersQueryRepository = new UsersQueryRepository();
-
-export {
-    usersQueryRepository,
-};

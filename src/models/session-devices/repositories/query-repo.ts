@@ -1,12 +1,13 @@
-import {Collection, WithId} from "mongodb";
+import {WithId} from "mongodb";
 import {getMongoViewModel} from "../../../core/utils/get-view-model";
 import {SessionDeviceDB} from "../types/session-devices-db.model";
 import {SessionDeviceViewModel} from "../types/session-device.output.model";
+import {sessionDevicesCollection} from "../../../db-settings";
+import {injectable} from "inversify";
 
+@injectable()
+export class SessionDevicesQueryRepository {
 
-export class SessionDeviceQueryRepository {
-    constructor(protected sessionDevicesCollection: Collection<SessionDeviceDB>) {
-    }
     static getViewModel = (session: WithId<SessionDeviceDB>): SessionDeviceViewModel => {
         const sessionDB = getMongoViewModel(session)
         return {
@@ -20,23 +21,23 @@ export class SessionDeviceQueryRepository {
 
     public getAll = async (userId:string): Promise<SessionDeviceViewModel[]> => {
 
-        const items = await this.sessionDevicesCollection
+        const items = await sessionDevicesCollection
             .find({userId})
             .toArray()
 
 
-        return items.map(SessionDeviceQueryRepository.getViewModel)
+        return items.map(SessionDevicesQueryRepository.getViewModel)
     }
 
     public getByDeviceId = async (deviceId: string): Promise<SessionDeviceViewModel | null> => {
-        const sessionDB = await this.sessionDevicesCollection.findOne({deviceId: deviceId});
+        const sessionDB = await sessionDevicesCollection.findOne({deviceId: deviceId});
         if (!sessionDB) return null;
-        return SessionDeviceQueryRepository.getViewModel(sessionDB)
+        return SessionDevicesQueryRepository.getViewModel(sessionDB)
 
     }
 
     public isPersistInDb = async (deviceId: string): Promise<boolean> => {
-        const result = await this.sessionDevicesCollection.countDocuments({deviceId})
+        const result = await sessionDevicesCollection.countDocuments({deviceId})
         return result > 0
     }
 }

@@ -1,8 +1,11 @@
 import {Request, Response} from "express";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
-import {commentsService} from "../application/comments.service";
-import {commentsQueryRepository} from "../repositories/query-repo";
+import {CommentsService} from "../application/comments.service";
+import {ioc} from "../../../core/index";
+import {CommentsQueryRepository} from "../repositories/query-repo";
 
+const commentsService = ioc.get(CommentsService)
+const commentsQueryRepository = ioc.get(CommentsQueryRepository)
 export const deleteCommentHandler = async (req: Request, res: Response) => {
     const comment = await commentsQueryRepository.getById({id: req.params.commentId});
 

@@ -10,8 +10,9 @@ import {CommentViewModel} from "../types/comment.view.model";
 import {getMongoViewModel} from "../../../core/utils/get-view-model";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
+import {injectable} from "inversify";
 
-
+@injectable()
 export class CommentsQueryRepository {
     static getViewModel = (comment: WithId<CommentDb>): CommentViewModel => {
         const commentDB = getMongoViewModel(comment)
@@ -70,16 +71,6 @@ export class CommentsQueryRepository {
         return count > 0;
     }
 
-    public clearDB = async () => {
-        await commentsCollection.deleteMany()
-    }
-
-
 }
 
 
-const commentsQueryRepository = new CommentsQueryRepository();
-
-export {
-    commentsQueryRepository,
-};

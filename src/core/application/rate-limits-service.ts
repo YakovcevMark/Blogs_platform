@@ -1,5 +1,6 @@
 import {RateLimitsRepository} from "../repositories/rate-limit/rate-limit-db-repository";
-
+import {injectable} from "inversify";
+@injectable()
 export class RateLimitsService {
     constructor(protected rateLimitsRepository: RateLimitsRepository) {
     }

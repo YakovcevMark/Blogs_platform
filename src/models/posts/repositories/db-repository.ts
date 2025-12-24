@@ -2,9 +2,10 @@ import {PostViewModel} from "../types/post.view.model";
 import {PostInputModel} from "../types/post.input.model";
 import {postsCollection} from "../../../db-settings";
 import {ObjectId, WithId} from "mongodb";
+import {injectable} from "inversify";
 
-
-class PostsRepository {
+@injectable()
+export class PostsRepository {
 
     public getById = async (id: string): Promise<WithId<PostViewModel> | null> => {
         const entity = await postsCollection.findOne({_id: new ObjectId(id)})
@@ -36,15 +37,4 @@ class PostsRepository {
         return response.deletedCount > 0
     }
 
-    public clearDB = async () => {
-        await postsCollection.deleteMany()
-    }
-
 }
-
-
-const postsRepository = new PostsRepository();
-
-export {
-    postsRepository,
-};

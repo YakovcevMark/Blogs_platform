@@ -3,8 +3,9 @@ import {ObjectId, WithId} from "mongodb";
 import {UserDb} from "../types/user.db.model";
 import {UserViewModel} from "../types/user.view.model";
 import {getDbFilters} from "../../../core/utils/get-db-filters";
+import {injectable} from "inversify";
 
-
+@injectable()
 export class UsersRepository {
 
     public getById = async (id: string): Promise<WithId<UserDb> | null> => {
@@ -76,35 +77,5 @@ export class UsersRepository {
         return response.deletedCount > 0
     }
 
-    // public addRefreshToken = async (id: string, token: string): Promise<boolean> => {
-    //     const response = await usersCollection.updateOne({_id: new ObjectId(id)}, {
-    //         $addToSet: {
-    //             'refreshTokens': token
-    //         },
-    //     });
-    //
-    //     return response.modifiedCount > 0
-    // }
-
-    // public removeRefreshToken = async (id:string, token: string): Promise<boolean> => {
-    //     const response = await usersCollection.updateOne({_id: new ObjectId(id)}, {
-    //         $pull: {
-    //             'refreshTokens': token
-    //         },
-    //     });
-    //
-    //     return response.modifiedCount > 0
-    // }
-
-    public clearDB = async () => {
-        await usersCollection.deleteMany()
-    }
-
 }
 
-
-const usersRepository = new UsersRepository();
-
-export {
-    usersRepository,
-};

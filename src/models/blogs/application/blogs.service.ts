@@ -1,7 +1,11 @@
-import {blogsRepository} from "../repositories/db-repository";
+import {BlogsRepository} from "../repositories/db-repository";
 import {BlogInputModel} from "../types/blog.input.model";
+import {inject, injectable} from "inversify";
 
-class BlogsService {
+@injectable()
+export class BlogsService {
+    constructor(@inject(BlogsRepository) protected blogsRepository: BlogsRepository) {
+    }
 
     public create = async (body: BlogInputModel): Promise<string> => {
         const entity = {
@@ -10,25 +14,16 @@ class BlogsService {
             isMembership: false,
             ...body,
         }
-        return await blogsRepository.create(entity);
+        return await this.blogsRepository.create(entity);
     }
 
     public update = async (id: string, body: BlogInputModel): Promise<boolean> => {
-        return await blogsRepository.update(id, body);
+        return await this.blogsRepository.update(id, body);
     }
 
     public remove = async (id: string): Promise<boolean> => {
-        return await blogsRepository.remove(id);
-    }
-
-    public clearDB = async () => {
-        return await blogsRepository.clearDB();
+        return await this.blogsRepository.remove(id);
     }
 
 }
 
-const blogsService = new BlogsService();
-
-export {
-    blogsService
-}

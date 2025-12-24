@@ -1,10 +1,13 @@
 import {Request, Response} from 'express'
 import {CommentsQueryList} from "../types/comments.query.list";
 import {matchedData} from "express-validator";
-import {postsQueryRepository} from "../../posts/repositories/query-repo";
+import {PostsQueryRepository} from "../../posts/repositories/query-repo";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
-import {commentsQueryRepository} from "../repositories/query-repo";
+import {CommentsQueryRepository} from "../repositories/query-repo";
+import {ioc} from "../../../core/index";
 
+const commentsQueryRepository = ioc.get(CommentsQueryRepository)
+const postsQueryRepository = ioc.get(PostsQueryRepository)
 export const getCommentsHandler = async (req: Request<{ postId: string }>, res: Response) => {
     const isPersistInDb = await postsQueryRepository.isPersistInDb(req.params.postId);
     if (!isPersistInDb) {

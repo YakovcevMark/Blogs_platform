@@ -8,9 +8,10 @@ import {getDbFilters} from "../../../core/utils/get-db-filters";
 import {getMongoViewModel} from "../../../core/utils/get-view-model";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
+import {injectable} from "inversify";
 
-
-class BlogsQueryRepository {
+@injectable()
+export class BlogsQueryRepository {
 
     static getViewModel = (blog: WithId<BlogViewModel>): BlogViewModel => {
         const blogDB = getMongoViewModel(blog)
@@ -66,8 +67,3 @@ class BlogsQueryRepository {
 }
 
 
-const blogsQueryRepository = new BlogsQueryRepository();
-
-export {
-    blogsQueryRepository,
-};

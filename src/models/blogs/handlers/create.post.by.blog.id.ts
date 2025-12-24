@@ -1,10 +1,14 @@
 import {Request, Response} from "express";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
 import {PostInputModel} from "../../posts/types/post.input.model";
-import {postsService} from "../../posts/application/posts.service";
-import {blogsQueryRepository} from "../repositories/query.repository";
-import {postsQueryRepository} from "../../posts/repositories/query-repo";
+import {PostsService} from "../../posts/application/posts.service";
+import {PostsQueryRepository} from "../../posts/repositories/query-repo";
+import {ioc} from "../../../core/index";
+import {BlogsQueryRepository} from "../repositories/query.repository";
 
+const postsService = ioc.get(PostsService)
+const postsQueryRepository = ioc.get(PostsQueryRepository)
+const blogsQueryRepository = ioc.get(BlogsQueryRepository)
 export const createPostByBlogIdHandler = async (req: Request<{
     blogId: string
 }, Omit<PostInputModel, 'blogId'>>, res: Response) => {

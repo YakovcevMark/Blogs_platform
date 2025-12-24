@@ -1,7 +1,9 @@
 import {SmtpService} from "./smpt.service";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class SmtpManager {
-    constructor(protected smtpService: SmtpService) {
+    constructor(@inject(SmtpService) protected smtpService: SmtpService) {
     }
 
     public sendRegistrationCodeEmail = async (params: { email: string, code: string }) => {

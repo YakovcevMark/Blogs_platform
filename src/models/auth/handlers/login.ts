@@ -1,10 +1,12 @@
 import {Request, Response} from "express";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
 import {LoginInputModel} from "../types/login.input.model";
-import {authService} from "../../../core/index";
+import {ioc} from "../../../core/index";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
 import {REFRESH_TOKEN_COOKIE_NAME} from "../../../core/constants/cookieNames";
+import {AuthService} from "../application/auth.service";
 
+const authService = ioc.get(AuthService);
 export const loginHandler = async (req: Request<{}, LoginInputModel>, res: Response) => {
     const token = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
 

@@ -1,22 +1,22 @@
-import {Collection, WithId} from "mongodb";
+import {WithId} from "mongodb";
 import {SessionDeviceDB} from "../types/session-devices-db.model";
+import {injectable} from "inversify";
+import {sessionDevicesCollection} from "../../../db-settings";
 
-
+@injectable()
 export class SessionDeviceRepository {
-    constructor(protected sessionDevicesCollection: Collection<SessionDeviceDB>) {
-    }
 
     public getByDeviceId = async (deviceId: string): Promise<WithId<SessionDeviceDB> | null> => {
-        return await this.sessionDevicesCollection.findOne({deviceId: deviceId});
+        return await sessionDevicesCollection.findOne({deviceId: deviceId});
     }
 
     public create = async (entity: SessionDeviceDB): Promise<string> => {
-        const result = await this.sessionDevicesCollection.insertOne(entity);
+        const result = await sessionDevicesCollection.insertOne(entity);
         return String(result.insertedId);
     }
 
     public update = async (body: SessionDeviceDB): Promise<boolean> => {
-        const resp = await this.sessionDevicesCollection.updateOne({deviceId: body.deviceId},
+        const resp = await sessionDevicesCollection.updateOne({deviceId: body.deviceId},
             {
                 $set: {
                     title: body.title,
@@ -30,22 +30,17 @@ export class SessionDeviceRepository {
     }
 
     public remove = async (deviceId: string): Promise<boolean> => {
-        const response = await this.sessionDevicesCollection.deleteOne({deviceId: deviceId});
+        const response = await sessionDevicesCollection.deleteOne({deviceId: deviceId});
         return response.deletedCount > 0
     }
 
     public removeAllSessionsExceptCurrent = async (currentSessionDeviceId: string, userId: string): Promise<boolean> => {
-        const response = await this.sessionDevicesCollection.deleteMany({
+        const response = await sessionDevicesCollection.deleteMany({
             userId,
             deviceId: {$ne: currentSessionDeviceId}
         });
         return response.deletedCount > 0
     }
-
-    public clearDB = async () => {
-        await this.sessionDevicesCollection.deleteMany()
-    }
-
 }
 
 

@@ -31,19 +31,19 @@ export async function connectToDatabase() {
         console.log(`Data base name: ${db_name}`);
 
         // удаляем токены в дб
-        // await refreshTokensCollection.createIndex(
-        //     { expireAt: 1 },
-        //     { expireAfterSeconds: 0 }
-        // );
-        // // удаляем сессию в дб
-        // await sessionDevicesCollection.createIndex(
-        //     { expireAt: 1 },
-        //     { expireAfterSeconds: 0 }
-        // );
-        // await rateLimitsCollection.createIndex(
-        //     { date: 1 },
-        //     { expireAfterSeconds: 10 }
-        // );
+        await refreshTokensCollection.createIndex(
+            { expireAt: 1 },
+            { expireAfterSeconds: 0 }
+        );
+        // удаляем сессию в дб
+        await sessionDevicesCollection.createIndex(
+            { expireAt: 1 },
+            { expireAfterSeconds: 0 }
+        );
+        await rateLimitsCollection.createIndex(
+            { date: 1 },
+            { expireAfterSeconds: 10 }
+        );
 
 
     } catch (error) {

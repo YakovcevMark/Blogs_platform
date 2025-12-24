@@ -1,10 +1,12 @@
 import {RefreshTokenDB} from "../types/refresh.token.model";
 import {addMinutes} from "date-fns";
 import {RefreshTokensRepository} from "../repositories/refresh-token/refresh-token-db-repository";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class RefreshTokensService {
 
-    constructor(private readonly refreshTokensRepository: RefreshTokensRepository) {
+    constructor(@inject(RefreshTokensRepository) protected readonly refreshTokensRepository: RefreshTokensRepository) {
     }
 
     private getTokenForBlackList = (token: string): RefreshTokenDB => {

@@ -3,18 +3,24 @@ import {HTTP_STATUS_CODES} from "./core/enums/http-status-codes";
 import {RoutePaths} from "./models/paths";
 import {blogsRouter} from "./models/blogs/routes";
 import {postsRouter} from "./models/posts/routes";
-import {connectToDatabase, rateLimitsCollection, refreshTokensCollection} from "./db-settings";
+import {
+    blogsCollection,
+    commentsCollection,
+    connectToDatabase,
+    postsCollection,
+    rateLimitsCollection,
+    refreshTokensCollection,
+    sessionDevicesCollection,
+    usersCollection
+} from "./db-settings";
 import {usersRouter} from "./models/users/routes";
 import {authRouter} from "./models/auth/routes";
-import {blogsService} from "./models/blogs/application/blogs.service";
-import {postsService} from "./models/posts/application/posts.service";
-import {commentsService} from "./models/comments/application/comments.service";
 import {commentsRouter} from "./models/comments/routes";
-import {sessionDevicesService, usersService} from "./core/index";
 import cookieParser from "cookie-parser";
 import {sessionDevicesRouter} from "./models/session-devices/routes";
 
 export const setupApp = async (app: Express) => {
+    //TODO: сделать глобальную отловку ошибок
     app.use(express.json());
     app.use(cookieParser());
     app.set('trust proxy', true);
@@ -29,13 +35,12 @@ export const setupApp = async (app: Express) => {
     app.use(RoutePaths.devices, sessionDevicesRouter)
 
 
-
     app.delete("/testing/all-data", (req, res) => {
-        postsService.clearDB()
-        blogsService.clearDB()
-        usersService.clearDB()
-        commentsService.clearDB()
-        sessionDevicesService.clearDB()
+        postsCollection.deleteMany()
+        blogsCollection.deleteMany()
+        usersCollection.deleteMany()
+        commentsCollection.deleteMany()
+        sessionDevicesCollection.deleteMany()
         rateLimitsCollection.deleteMany();
         refreshTokensCollection.deleteMany()
         res.sendStatus(HTTP_STATUS_CODES.NO_CONTENT_204)

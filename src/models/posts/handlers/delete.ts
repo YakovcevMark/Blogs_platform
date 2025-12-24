@@ -1,8 +1,10 @@
 import {Request, Response} from "express";
 import {RequestEntityId} from "../../../core/types";
 import {HTTP_STATUS_CODES} from "../../../core/enums/http-status-codes";
-import {postsService} from "../application/posts.service";
+import {PostsService} from "../application/posts.service";
+import {ioc} from "../../../core/index";
 
+const postsService = ioc.get(PostsService)
 export const deletePostHandler = async (req: Request<RequestEntityId>, res: Response) => {
     const isRemoved = await postsService.remove(req.params.id);
     res.sendStatus(

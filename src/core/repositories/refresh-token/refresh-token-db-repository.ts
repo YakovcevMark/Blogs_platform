@@ -1,6 +1,7 @@
 import {RefreshTokenDB} from "../../types/refresh.token.model";
 import {refreshTokensCollection} from "../../../db-settings";
-
+import {injectable} from "inversify";
+@injectable()
 export class RefreshTokensRepository {
 
     public saveToken = async (token: RefreshTokenDB): Promise<string> => {

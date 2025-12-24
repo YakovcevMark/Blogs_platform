@@ -8,8 +8,9 @@ import {getSortDbDirection} from "../../../core/utils/get-sort-db-direction";
 import {getSkipDbValue} from "../../../core/utils/get-skip-db-value";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
+import {injectable} from "inversify";
 
-
+@injectable()
 export class PostsQueryRepository {
 
     static getViewModel = (post: WithId<PostViewModel>): PostViewModel => {
@@ -68,9 +69,3 @@ export class PostsQueryRepository {
     }
 }
 
-
-const postsQueryRepository = new PostsQueryRepository();
-
-export {
-    postsQueryRepository,
-};

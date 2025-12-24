@@ -1,6 +1,8 @@
 import {emailValidation, stringValidation} from "../../../core/validation";
-import {usersQueryRepository} from "../repositories/query-repo";
+import {UsersQueryRepository} from "../repositories/query-repo";
+import {ioc} from "../../../core/index";
 
+const usersQueryRepository = ioc.get(UsersQueryRepository)
 export const userValidationMiddleware = [
     stringValidation({
         name: 'login',
