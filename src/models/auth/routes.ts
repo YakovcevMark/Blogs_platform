@@ -13,6 +13,8 @@ import {refreshTokenHandler} from "./handlers/refreshToken";
 import {logoutHandler} from "./handlers/logout";
 import {checkRefreshTokenMiddleware} from "../../middleware/check-refresh-token-middleware";
 import {rateLimitMiddleware} from "../../middleware/rate-limit-middleware";
+import {newPasswordHandler} from "./handlers/new-password-handler";
+import {passwordRecoveryHandler} from "./handlers/password-recovery";
 
 const authRouter = Router()
 
@@ -21,6 +23,20 @@ authRouter.post('/login',
     inputValidationResultMiddleware,
     rateLimitMiddleware,
     loginHandler
+)
+
+authRouter.post('/password-recovery',
+    emailValidation({name: 'email', min: 1}),
+    inputValidationResultMiddleware,
+    rateLimitMiddleware,
+    passwordRecoveryHandler,
+)
+authRouter.post('/new-password',
+    stringValidation({name: 'recoveryCode', min: 1}),
+    stringValidation({name: 'newPassword', min: 6, max: 20}),
+    inputValidationResultMiddleware,
+    rateLimitMiddleware,
+    newPasswordHandler,
 )
 
 authRouter.get('/me',

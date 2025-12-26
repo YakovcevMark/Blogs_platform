@@ -10,6 +10,11 @@ import {RefreshTokensService} from "../../../core/application/refrest-tokens.ser
 import {JwtService} from "../../../core/application/jwt.service";
 import {SessionDevicesService} from "../../session-devices/application/session-device.service";
 import {inject, injectable} from "inversify";
+import {PasswordRecoveryCodesService} from "../../../core/application/password-recovery-codes.service";
+import {
+    PasswordRecoveryCodesRepository
+} from "../../../core/repositories/password-recovery-codes/password-recovery-codes-repository";
+import {UsersService} from "../../users/application/users.service";
 
 @injectable()
 export class AuthService {
@@ -20,6 +25,9 @@ export class AuthService {
         @inject(SessionDevicesService) protected sessionDevicesService: SessionDevicesService,
         @inject(JwtService) protected jwtService: JwtService,
         @inject(BcryptService) protected bcryptService: BcryptService,
+        @inject(PasswordRecoveryCodesService) protected passwordRecoveryCodesService: PasswordRecoveryCodesService,
+        @inject(PasswordRecoveryCodesRepository) protected passwordRecoveryCodesRepository: PasswordRecoveryCodesRepository,
+        @inject(UsersService) protected usersService: UsersService,
     ) {
     }
 
@@ -30,6 +38,45 @@ export class AuthService {
         return {
             accessToken,
             refreshToken
+        }
+    }
+
+    async recoverPassword(email: string): Promise<Result> {
+
+        const insertedCodeData = await this.passwordRecoveryCodesService.create(email);
+        this.smtpManager.sendPasswordRecoveryCodeEmail({email, code: insertedCodeData.code});
+
+        return {
+            status: SERVICE_RESULT_CODES.OK,
+        };
+    }
+
+    async setNewPassword(recoveryCode: string, password: string): Promise<Result> {
+        const passwordRecoveryRecordDB = await this.passwordRecoveryCodesRepository.getByCode(recoveryCode);
+
+        if (!passwordRecoveryRecordDB) {
+            return {
+                status: SERVICE_RESULT_CODES.CLIENT_ERROR,
+                extensions: [{field: 'recoveryCode', message: 'no code found'}],
+            }
+        }
+
+        if (passwordRecoveryRecordDB.expireAt < new Date()) {
+            return {
+                status: SERVICE_RESULT_CODES.CLIENT_ERROR,
+                extensions: [{field: 'recoveryCode', message: 'code has already expired'}],
+            }
+        }
+
+        const [hashedPassword] = await Promise.all([
+            this.bcryptService.genHashedPassword(password),
+            this.passwordRecoveryCodesService.setIsCodeActiveFalse(recoveryCode),
+        ]);
+
+        await this.usersService.updatePassword(passwordRecoveryRecordDB.email, hashedPassword)
+
+        return {
+            status: SERVICE_RESULT_CODES.OK,
         }
     }
 
@@ -77,7 +124,6 @@ export class AuthService {
                     expired_in
                 }]
             },
-            refreshTokens: [],
         }
 
         this.smtpManager.sendRegistrationCodeEmail({email, code});

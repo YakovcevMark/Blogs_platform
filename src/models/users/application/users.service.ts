@@ -12,6 +12,10 @@ export class UsersService {
     ) {
     }
 
+    async updatePassword(email: string, password: string) {
+        return await this.usersRepository.updateByEmail(email, {password});
+    }
+
     public create = async (body: UserInputModel): Promise<string> => {
         const hashedPassword = await this.bcryptService.genHashedPassword(body.password);
 
@@ -24,12 +28,10 @@ export class UsersService {
                 codes: [],
                 isConfirmed: true,
             },
-            refreshTokens: []
         }
 
         return await this.usersRepository.create(entity);
     }
-
 
     public remove = async (id: string): Promise<boolean> => {
         return await this.usersRepository.remove(id);

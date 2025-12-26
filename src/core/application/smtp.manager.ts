@@ -6,7 +6,7 @@ export class SmtpManager {
     constructor(@inject(SmtpService) protected smtpService: SmtpService) {
     }
 
-    public sendRegistrationCodeEmail = async (params: { email: string, code: string }) => {
+    async sendRegistrationCodeEmail(params: { email: string, code: string }) {
         return this.smtpService.sendMail({
             to: [params.email],
             subject: 'Register',
@@ -15,6 +15,19 @@ export class SmtpManager {
            <h1>To complete the registration follow the link belown:</h1>
            <a href='https://somesite.com/confirm-email?code=${params.code}'>complete registration</a>
       </div>
+`
+        })
+    }
+
+    async sendPasswordRecoveryCodeEmail(params: { email: string, code: string }) {
+        return this.smtpService.sendMail({
+            to: [params.email],
+            subject: 'Password Recovery',
+            from: 'Blogs Platform',
+            html: `<h1>Password recovery</h1>
+       <p>To finish password recovery please follow the link below:
+          <a href='https://somesite.com/password-recovery?recoveryCode=${params.code}'>recovery password</a>
+      </p>
 `
         })
     }

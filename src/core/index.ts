@@ -26,6 +26,10 @@ import {PostsService} from "../models/posts/application/posts.service";
 import {JwtService} from "./application/jwt.service";
 import {BcryptService} from "./application/bcrypt.service";
 import {AuthService} from "../models/auth/application/auth.service";
+import {PasswordRecoveryCodesService} from "./application/password-recovery-codes.service";
+import {
+    PasswordRecoveryCodesRepository
+} from "./repositories/password-recovery-codes/password-recovery-codes-repository";
 
 export const ioc: Container = new Container();
 
@@ -65,5 +69,8 @@ ioc.bind(PostsService).to(PostsService);
 ioc.bind(CommentsQueryRepository).to(CommentsQueryRepository);
 ioc.bind(CommentsRepository).to(CommentsRepository);
 ioc.bind(CommentsService).to(CommentsService);
+
+ioc.bind(PasswordRecoveryCodesRepository).to(PasswordRecoveryCodesRepository);
+ioc.bind(PasswordRecoveryCodesService).to(PasswordRecoveryCodesService);
 
 

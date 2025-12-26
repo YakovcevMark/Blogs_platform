@@ -67,6 +67,13 @@ export class UsersRepository {
         return response.modifiedCount > 0
     }
 
+    async updateByEmail(email: string, dto: Partial<UserDb>): Promise<boolean> {
+        const response = await usersCollection.updateOne({email}, {
+            $set: dto
+        });
+        return response.modifiedCount > 0
+    }
+
     public create = async (entity: UserDb): Promise<string> => {
         const result = await usersCollection.insertOne(entity);
         return String(result.insertedId);

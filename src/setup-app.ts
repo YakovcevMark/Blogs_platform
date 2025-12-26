@@ -6,7 +6,7 @@ import {postsRouter} from "./models/posts/routes";
 import {
     blogsCollection,
     commentsCollection,
-    connectToDatabase,
+    connectToDatabase, passwordRecoveryCodesCollection,
     postsCollection,
     rateLimitsCollection,
     refreshTokensCollection,
@@ -43,6 +43,7 @@ export const setupApp = async (app: Express) => {
         sessionDevicesCollection.deleteMany()
         rateLimitsCollection.deleteMany();
         refreshTokensCollection.deleteMany()
+        passwordRecoveryCodesCollection.deleteMany()
         res.sendStatus(HTTP_STATUS_CODES.NO_CONTENT_204)
     });
 

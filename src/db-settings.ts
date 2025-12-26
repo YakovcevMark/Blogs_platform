@@ -7,6 +7,7 @@ import {CommentDb} from "./models/comments/types/comment.db.model";
 import {RefreshTokenDB} from "./core/types/refresh.token.model";
 import {SessionDeviceDB} from "./models/session-devices/types/session-devices-db.model";
 import {RateLimitRecordDB} from "./core/types/rate-limit-record";
+import {PasswordRecoveryCodeDb} from "./core/types/password-recovery-code-db";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ export const commentsCollection = db.collection<CommentDb>("comments");
 export const refreshTokensCollection = db.collection<RefreshTokenDB>("refreshTokens");
 export const sessionDevicesCollection = db.collection<SessionDeviceDB>("sessionDevices");
 export const rateLimitsCollection = db.collection<RateLimitRecordDB>("rateLimitRecords");
+export const passwordRecoveryCodesCollection = db.collection<PasswordRecoveryCodeDb>("passwordRecoveryCodes");
 
 export async function connectToDatabase() {
     try {
@@ -43,6 +45,10 @@ export async function connectToDatabase() {
         await rateLimitsCollection.createIndex(
             { date: 1 },
             { expireAfterSeconds: 10 }
+        );
+        await passwordRecoveryCodesCollection.createIndex(
+            { expireAt: 1 },
+            { expireAfterSeconds: 60 }
         );
 
 
