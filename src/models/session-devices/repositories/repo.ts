@@ -4,7 +4,7 @@ import {injectable} from "inversify";
 import {sessionDevicesCollection} from "../../../db-settings";
 
 @injectable()
-export class SessionDeviceRepository {
+export class SessionDevicesRepository {
 
     public getByDeviceId = async (deviceId: string): Promise<WithId<SessionDeviceDB> | null> => {
         return await sessionDevicesCollection.findOne({deviceId: deviceId});

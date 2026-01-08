@@ -6,7 +6,6 @@ import {addHours} from "date-fns";
 import {BcryptService} from "../../../core/application/bcrypt.service";
 import {Result} from "../../../core/types/service-result-object";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
-import {RefreshTokensService} from "../../../core/application/refrest-tokens.service";
 import {JwtService} from "../../../core/application/jwt.service";
 import {SessionDevicesService} from "../../session-devices/application/session-device.service";
 import {inject, injectable} from "inversify";
@@ -21,7 +20,6 @@ export class AuthService {
     constructor(
         @inject(UsersRepository) protected usersRepository: UsersRepository,
         @inject(SmtpManager) protected smtpManager: SmtpManager,
-        @inject(RefreshTokensService) protected refreshTokensService: RefreshTokensService,
         @inject(SessionDevicesService) protected sessionDevicesService: SessionDevicesService,
         @inject(JwtService) protected jwtService: JwtService,
         @inject(BcryptService) protected bcryptService: BcryptService,
@@ -304,10 +302,8 @@ export class AuthService {
         refreshToken: string
     } | null>> => {
 
-        const [tokens] = await Promise.all([
-            this.generateTokens(userId, deviceId),
-            this.refreshTokensService.addToBlackList(cookieToken),
-        ])
+        const tokens = await this.generateTokens(userId, deviceId);
+
 
         const refreshTokenHeaderAndPayload = await this.jwtService.verifyToken(tokens.refreshToken);
 
@@ -329,10 +325,7 @@ export class AuthService {
 
     public logout = async (cookieToken: string, deviceId: string, userId: string): Promise<Result> => {
 
-        await Promise.all([
-            this.refreshTokensService.addToBlackList(cookieToken),
-            this.sessionDevicesService.remove(deviceId, userId)
-        ])
+        await this.sessionDevicesService.remove(deviceId, userId)
 
         return {
             status: SERVICE_RESULT_CODES.OK

@@ -9,7 +9,6 @@ import {
     connectToDatabase, passwordRecoveryCodesCollection,
     postsCollection,
     rateLimitsCollection,
-    refreshTokensCollection,
     sessionDevicesCollection,
     usersCollection
 } from "./db-settings";
@@ -42,7 +41,6 @@ export const setupApp = async (app: Express) => {
         commentsCollection.deleteMany()
         sessionDevicesCollection.deleteMany()
         rateLimitsCollection.deleteMany();
-        refreshTokensCollection.deleteMany()
         passwordRecoveryCodesCollection.deleteMany()
         res.sendStatus(HTTP_STATUS_CODES.NO_CONTENT_204)
     });

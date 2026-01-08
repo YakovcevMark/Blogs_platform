@@ -3,10 +3,7 @@ import {SmtpService} from "./application/smpt.service";
 import {SmtpManager} from "./application/smtp.manager";
 import {UsersRepository} from "../models/users/repositories/repo";
 import {UsersService} from "../models/users/application/users.service";
-import {RefreshTokensService} from "./application/refrest-tokens.service";
-import {RefreshTokensRepository} from "./repositories/refresh-token/refresh-token-db-repository";
-import {RefreshTokensQueryRepository} from "./repositories/refresh-token/refresh-token-db.query-repository";
-import {SessionDeviceRepository} from "../models/session-devices/repositories/repo";
+import {SessionDevicesRepository} from "../models/session-devices/repositories/repo";
 import {SessionDevicesQueryRepository} from "../models/session-devices/repositories/query-repo";
 import {SessionDevicesService} from "../models/session-devices/application/session-device.service";
 import {RateLimitsService} from "./application/rate-limits-service";
@@ -42,12 +39,8 @@ ioc.bind(AuthService).to(AuthService);
 ioc.bind(SmtpService).to(SmtpService);
 ioc.bind(SmtpManager).to(SmtpManager);
 
-ioc.bind(RefreshTokensQueryRepository).to(RefreshTokensQueryRepository);
-ioc.bind(RefreshTokensRepository).to(RefreshTokensRepository);
-ioc.bind(RefreshTokensService).to(RefreshTokensService);
-
 ioc.bind(SessionDevicesQueryRepository).to(SessionDevicesQueryRepository);
-ioc.bind(SessionDeviceRepository).to(SessionDeviceRepository);
+ioc.bind(SessionDevicesRepository).to(SessionDevicesRepository);
 ioc.bind(SessionDevicesService).to(SessionDevicesService);
 
 ioc.bind(RateLimitsQueryRepository).to(RateLimitsQueryRepository);

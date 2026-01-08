@@ -1,4 +1,4 @@
-import {SessionDeviceRepository} from "../repositories/repo";
+import {SessionDevicesRepository} from "../repositories/repo";
 import {SessionDeviceDB} from "../types/session-devices-db.model";
 import {Result} from "../../../core/types/service-result-object";
 import {SERVICE_RESULT_CODES} from "../../../core/enums/service-result-codes";
@@ -7,7 +7,7 @@ import {inject, injectable} from "inversify";
 @injectable()
 export class SessionDevicesService {
 
-    constructor(@inject(SessionDeviceRepository) protected sessionDeviceRepository: SessionDeviceRepository) {
+    constructor(@inject(SessionDevicesRepository) protected sessionDeviceRepository: SessionDevicesRepository) {
     }
 
     public create = async (body: SessionDeviceDB): Promise<string> => {
