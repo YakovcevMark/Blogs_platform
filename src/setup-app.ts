@@ -3,20 +3,19 @@ import {HTTP_STATUS_CODES} from "./core/enums/http-status-codes";
 import {RoutePaths} from "./models/paths";
 import {blogsRouter} from "./models/blogs/routes";
 import {postsRouter} from "./models/posts/routes";
-import {
-    blogsCollection,
-    commentsCollection,
-    connectToDatabase, passwordRecoveryCodesCollection,
-    postsCollection,
-    rateLimitsCollection,
-    sessionDevicesCollection,
-    usersCollection
-} from "./db-settings";
+import {connectToDatabase,} from "./db-settings";
 import {usersRouter} from "./models/users/routes";
 import {authRouter} from "./models/auth/routes";
 import {commentsRouter} from "./models/comments/routes";
 import cookieParser from "cookie-parser";
 import {sessionDevicesRouter} from "./models/session-devices/routes";
+import {SessionDeviceModel} from "./models/session-devices/schemas/session-schema";
+import {PasswordRecoveryCodeModel} from "./core/schemas/password-recovery-code-db-schema";
+import {RateLimitRecordModel} from "./core/schemas/rate-limit-record-schema";
+import {CommentModel} from "./models/comments/schemes/comment.db.schema";
+import {UserModel} from "./models/users/schemas/user.db.schema";
+import {PostModel} from "./models/posts/schemas/post.db.schema";
+import {BlogModel} from "./models/blogs/schemas/blog.schema";
 
 export const setupApp = async (app: Express) => {
     //TODO: сделать глобальную отловку ошибок
@@ -34,14 +33,16 @@ export const setupApp = async (app: Express) => {
     app.use(RoutePaths.devices, sessionDevicesRouter)
 
 
-    app.delete("/testing/all-data", (req, res) => {
-        postsCollection.deleteMany()
-        blogsCollection.deleteMany()
-        usersCollection.deleteMany()
-        commentsCollection.deleteMany()
-        sessionDevicesCollection.deleteMany()
-        rateLimitsCollection.deleteMany();
-        passwordRecoveryCodesCollection.deleteMany()
+    app.delete("/testing/all-data", async (req, res) => {
+        await Promise.all([
+            PostModel.deleteMany(),
+            BlogModel.deleteMany(),
+            UserModel.deleteMany(),
+            CommentModel.deleteMany(),
+            SessionDeviceModel.deleteMany(),
+            RateLimitRecordModel.deleteMany(),
+            PasswordRecoveryCodeModel.deleteMany(),
+        ])
         res.sendStatus(HTTP_STATUS_CODES.NO_CONTENT_204)
     });
 

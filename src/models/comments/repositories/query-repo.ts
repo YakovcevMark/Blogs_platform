@@ -1,4 +1,3 @@
-import {commentsCollection} from "../../../db-settings";
 import {ObjectId, WithId} from "mongodb";
 import {CommentsQueryList} from "../types/comments.query.list";
 import {getSortDbDirection} from "../../../core/utils/get-sort-db-direction";
@@ -11,6 +10,7 @@ import {getMongoViewModel} from "../../../core/utils/get-view-model";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
 import {injectable} from "inversify";
+import {CommentModel} from "../schemes/comment.db.schema";
 
 @injectable()
 export class CommentsQueryRepository {
@@ -33,12 +33,12 @@ export class CommentsQueryRepository {
     public getAll = async (params: CommentsQueryList): Promise<PaginatorOutput<CommentViewModel>> => {
         const {postId, sortBy, sortDirection, pageSize, pageNumber} = params;
 
-        const items = await commentsCollection
+        const items = await CommentModel
             .find(this.getListFilter({postId}))
-            .sort(sortBy, getSortDbDirection(sortDirection))
+            .sort({ [sortBy]: getSortDbDirection(sortDirection) })
             .skip(getSkipDbValue({pageSize, pageNumber}))
             .limit(pageSize)
-            .toArray()
+            .lean()
         const totalCount = await this.getCount({postId})
 
         return {
@@ -52,14 +52,14 @@ export class CommentsQueryRepository {
 
     public getCount = async (params: Partial<Pick<CommentsQueryList, 'postId'>>): Promise<number> => {
         const {postId} = params;
-        return await commentsCollection.countDocuments(this.getListFilter({
+        return CommentModel.countDocuments(this.getListFilter({
             postId,
         }));
     }
 
     public getById = async (params: RequestEntityId): Promise<CommentViewModel | null> => {
         const {id} = params;
-        const entity = await commentsCollection.findOne({_id: new ObjectId(id)});
+        const entity = await CommentModel.findOne({_id: new ObjectId(id)}).lean();
         if (entity) {
             return CommentsQueryRepository.getViewModel(entity);
         }
@@ -67,7 +67,7 @@ export class CommentsQueryRepository {
     }
 
     public isPersistInDb = async (id: string): Promise<boolean> => {
-        const count = await commentsCollection.countDocuments({_id: new ObjectId(id)});
+        const count = await CommentModel.countDocuments({_id: new ObjectId(id)});
         return count > 0;
     }
 

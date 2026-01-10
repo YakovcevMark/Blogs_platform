@@ -1,19 +1,19 @@
-import {usersCollection} from "../../../db-settings";
 import {ObjectId, WithId} from "mongodb";
 import {UserDb} from "../types/user.db.model";
 import {UserViewModel} from "../types/user.view.model";
 import {getDbFilters} from "../../../core/utils/get-db-filters";
 import {injectable} from "inversify";
+import {UserModel} from "../schemas/user.db.schema";
 
 @injectable()
 export class UsersRepository {
 
     public getById = async (id: string): Promise<WithId<UserDb> | null> => {
-        return usersCollection.findOne({_id: new ObjectId(id)});
+        return UserModel.findOne({_id: new ObjectId(id)}).lean();
     }
 
     public getByCode = async (code: string): Promise<WithId<UserDb> | null> => {
-        return await usersCollection.findOne({'emailConformation.codes.code': code});
+        return UserModel.findOne({'emailConformation.codes.code': code}).lean();
     }
 
     // public getByRefreshToken = async (refreshToken: string): Promise<WithId<UserDb> | null> => {
@@ -21,21 +21,21 @@ export class UsersRepository {
     // }
 
     public getUserByLoginOrEmail = async (loginOrEmail: string): Promise<WithId<UserDb> | null> => {
-        return await usersCollection.findOne(getDbFilters<UserViewModel>([
+        return UserModel.findOne(getDbFilters<UserViewModel>([
             {fieldName: 'login', queryParam: loginOrEmail, isStrictEqual: true},
             {fieldName: 'email', queryParam: loginOrEmail, isStrictEqual: true}
-        ]));
+        ])).lean();
     }
 
     public isUserWithEmailExist = async (email: string): Promise<boolean> => {
-        const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
+        const count = await UserModel.countDocuments(getDbFilters<UserViewModel>([
             {fieldName: 'email', queryParam: email, isStrictEqual: true}
         ]));
         return count > 0;
     }
 
     public isUserWithLoginExist = async (login: string): Promise<boolean> => {
-        const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
+        const count = await UserModel.countDocuments(getDbFilters<UserViewModel>([
             {fieldName: 'login', queryParam: login, isStrictEqual: true},
         ]));
         return count > 0;
@@ -43,7 +43,7 @@ export class UsersRepository {
 
     public confirmEmail = async (id: string): Promise<boolean> => {
 
-        const response = await usersCollection.updateOne({_id: new ObjectId(id)}, {
+        const response = await UserModel.updateOne({_id: new ObjectId(id)}, {
             $set: {
                 'emailConformation.codes': [],
                 'emailConformation.isConfirmed': true,
@@ -55,7 +55,7 @@ export class UsersRepository {
 
     public addConformationCode = async (id: string, code: string, expired_in: Date): Promise<boolean> => {
 
-        const response = await usersCollection.updateOne({_id: new ObjectId(id)}, {
+        const response = await UserModel.updateOne({_id: new ObjectId(id)}, {
             $push: {
                 'emailConformation.codes': {
                     code,
@@ -68,19 +68,20 @@ export class UsersRepository {
     }
 
     async updateByEmail(email: string, dto: Partial<UserDb>): Promise<boolean> {
-        const response = await usersCollection.updateOne({email}, {
+        const response = await UserModel.updateOne({email}, {
             $set: dto
         });
         return response.modifiedCount > 0
     }
 
-    public create = async (entity: UserDb): Promise<string> => {
-        const result = await usersCollection.insertOne(entity);
-        return String(result.insertedId);
+    public create = async (dto: UserDb): Promise<string> => {
+        const entity = new UserModel(dto);
+        await entity.save();
+        return entity.id
     }
 
     public remove = async (id: string): Promise<boolean> => {
-        const response = await usersCollection.deleteOne({_id: new ObjectId(id)});
+        const response = await UserModel.deleteOne({_id: new ObjectId(id)});
         return response.deletedCount > 0
     }
 

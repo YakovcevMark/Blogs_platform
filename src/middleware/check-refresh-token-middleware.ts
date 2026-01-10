@@ -22,18 +22,16 @@ export const checkRefreshTokenMiddleware = async (
 
         const payload = await jwtService.verifyToken(token);
 
-
         if (!payload) {
             return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
         }
 
         const session = await sessionDevicesRepository.getByDeviceId(payload.deviceId)
-
         if (!session) {
             return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
         }
 
-        if (session.lastActiveDate !== payload.iat) {
+        if (session.lastActiveDate.getTime() !== payload.iat) {
             return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
         }
 

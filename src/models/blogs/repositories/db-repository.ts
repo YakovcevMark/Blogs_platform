@@ -1,23 +1,24 @@
 import {BlogViewModel} from "../types/blog.view.model";
 import {BlogInputModel} from "../types/blog.input.model";
-import {blogsCollection} from "../../../db-settings";
 import {ObjectId, WithId} from "mongodb";
 import {injectable} from "inversify";
+import {BlogModel} from "../schemas/blog.schema";
 
 @injectable()
 export class BlogsRepository {
 
     public getById = async (id: string): Promise<WithId<BlogViewModel> | null> => {
-        return await blogsCollection.findOne({_id: new ObjectId(id)})
+        return BlogModel.findOne({_id: new ObjectId(id)})
     }
 
-    public create = async (entity: BlogViewModel): Promise<string> => {
-        const result = await blogsCollection.insertOne(entity);
-        return String(result.insertedId);
+    public create = async (dto: BlogViewModel): Promise<string> => {
+        const entity = new BlogModel(dto);
+        await entity.save();
+        return entity.id
     }
 
     public update = async (id: string, body: BlogInputModel): Promise<boolean> => {
-        const resp = await blogsCollection.updateOne({_id: new ObjectId(id)},
+        const resp = await BlogModel.updateOne({_id: new ObjectId(id)},
             {
                 $set: {
                     ...body
@@ -28,7 +29,7 @@ export class BlogsRepository {
     }
 
     public remove = async (id: string): Promise<boolean> => {
-        const response = await blogsCollection.deleteOne({_id: new ObjectId(id)});
+        const response = await BlogModel.deleteOne({_id: new ObjectId(id)});
         return response.deletedCount > 0
     }
 

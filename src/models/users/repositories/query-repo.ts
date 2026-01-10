@@ -1,5 +1,4 @@
 import {UserViewModel} from "../types/user.view.model";
-import {usersCollection} from "../../../db-settings";
 import {ObjectId, WithId} from "mongodb";
 import {UsersQueryList} from "../types/users.query.list";
 import {getSortDbDirection} from "../../../core/utils/get-sort-db-direction";
@@ -11,6 +10,7 @@ import {RequestEntityId} from "../../../core/types";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {injectable} from "inversify";
+import {UserModel} from "../schemas/user.db.schema";
 
 @injectable()
 export class UsersQueryRepository {
@@ -38,12 +38,12 @@ export class UsersQueryRepository {
     public getAll = async (params: UsersQueryList): Promise<PaginatorOutput<UserViewModel>> => {
         const {searchLoginTerm, searchEmailTerm, sortBy, sortDirection, pageSize, pageNumber} = params;
 
-        const items = await usersCollection
+        const items = await UserModel
             .find(this.getListFilter({searchLoginTerm, searchEmailTerm, isStrictEqual: false}))
-            .sort(sortBy, getSortDbDirection(sortDirection))
+            .sort({ [sortBy]: getSortDbDirection(sortDirection) })
             .skip(getSkipDbValue({pageSize, pageNumber}))
             .limit(pageSize)
-            .toArray()
+            .lean()
 
         const totalCount = await this.getCount({searchEmailTerm, searchLoginTerm})
 
@@ -58,7 +58,7 @@ export class UsersQueryRepository {
 
     public getById = async (params: RequestEntityId): Promise<UserViewModel | null> => {
         const {id} = params;
-        const entity = await usersCollection.findOne({_id: new ObjectId(id)});
+        const entity = await UserModel.findOne({_id: new ObjectId(id)}).lean();
         if (entity) {
             return UsersQueryRepository.getViewModel(entity)
         }
@@ -67,14 +67,14 @@ export class UsersQueryRepository {
     }
 
     public isUserWithEmailExist = async (email: string): Promise<boolean> => {
-        const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
+        const count = await UserModel.countDocuments(getDbFilters<UserViewModel>([
             {fieldName: 'email', queryParam: email, isStrictEqual:true}
         ]));
         return count > 0;
     }
 
     public isUserWithLoginExist = async (login:string): Promise<boolean> => {
-        const count = await usersCollection.countDocuments(getDbFilters<UserViewModel>([
+        const count = await UserModel.countDocuments(getDbFilters<UserViewModel>([
             {fieldName: 'login', queryParam: login, isStrictEqual:true},
         ]));
         return count > 0;
@@ -84,29 +84,29 @@ export class UsersQueryRepository {
         isValidation?: boolean
     }): Promise<number> => {
         const {searchLoginTerm, searchEmailTerm} = params;
-        return await usersCollection.countDocuments(this.getListFilter({
+        return  UserModel.countDocuments(this.getListFilter({
             searchLoginTerm,
             searchEmailTerm,
         }));
     }
 
     public isPersistInDb = async (id: string): Promise<boolean> => {
-        const count = await usersCollection.countDocuments({_id: new ObjectId(id)});
+        const count = await UserModel.countDocuments({_id: new ObjectId(id)});
         return count > 0;
     }
 
     public getUserByLoginOrEmail = async (loginOrEmail: string): Promise<UserViewModel | null> => {
-        const user = await usersCollection.findOne(this.getListFilter({
+        const user = await UserModel.findOne(this.getListFilter({
             searchLoginTerm: loginOrEmail,
             searchEmailTerm: loginOrEmail,
             isStrictEqual: true
-        }));
+        })).lean();
         if (!user) return null
         return UsersQueryRepository.getViewModel(user);
     }
 
     public getByRefreshToken = async (refreshToken: string): Promise<UserViewModel | null> => {
-        const user =  await usersCollection.findOne({'refreshTokens': refreshToken});
+        const user =  await UserModel.findOne({'refreshTokens': refreshToken}).lean();
         if (!user) return null
         return UsersQueryRepository.getViewModel(user);
     }

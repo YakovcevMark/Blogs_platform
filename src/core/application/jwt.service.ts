@@ -6,8 +6,8 @@ const secret = process.env.JWT_SECRET || '123';
 type JWTPayload = {
     userId: string;
     deviceId: string;
-    iat: Date;
-    exp: Date;
+    iat: number;
+    exp: number;
 }
 @injectable()
 export class JwtService {

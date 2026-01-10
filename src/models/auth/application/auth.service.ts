@@ -272,19 +272,19 @@ export class AuthService {
         if (deviceId) {
             await this.sessionDevicesService.update({
                 deviceId,
-                expireAt: refreshTokenHeaderAndPayload!.exp,
+                expireAt: new Date(refreshTokenHeaderAndPayload!.exp),
+                lastActiveDate: new Date(refreshTokenHeaderAndPayload!.iat),
                 title: deviceName,
                 ip,
-                lastActiveDate: refreshTokenHeaderAndPayload!.iat,
                 userId: String(userDB._id)
             })
         } else {
             await this.sessionDevicesService.create({
                 deviceId: refreshTokenHeaderAndPayload!.deviceId,
-                expireAt: refreshTokenHeaderAndPayload!.exp,
+                expireAt: new Date(refreshTokenHeaderAndPayload!.exp),
+                lastActiveDate: new Date(refreshTokenHeaderAndPayload!.iat),
                 title: deviceName,
                 ip,
-                lastActiveDate: refreshTokenHeaderAndPayload!.iat,
                 userId: String(userDB._id),
             })
         }
@@ -309,10 +309,10 @@ export class AuthService {
 
         await this.sessionDevicesService.update({
             deviceId,
-            expireAt: refreshTokenHeaderAndPayload!.exp,
+            expireAt: new Date(refreshTokenHeaderAndPayload!.exp),
             title: deviceName,
             ip,
-            lastActiveDate: refreshTokenHeaderAndPayload!.iat,
+            lastActiveDate: new Date(refreshTokenHeaderAndPayload!.iat),
             userId
         })
 

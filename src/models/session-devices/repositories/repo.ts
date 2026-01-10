@@ -1,22 +1,23 @@
 import {WithId} from "mongodb";
 import {SessionDeviceDB} from "../types/session-devices-db.model";
 import {injectable} from "inversify";
-import {sessionDevicesCollection} from "../../../db-settings";
+import {SessionDeviceModel} from "../schemas/session-schema";
 
 @injectable()
 export class SessionDevicesRepository {
 
     public getByDeviceId = async (deviceId: string): Promise<WithId<SessionDeviceDB> | null> => {
-        return await sessionDevicesCollection.findOne({deviceId: deviceId});
+        return SessionDeviceModel.findOne({deviceId: deviceId});
     }
 
-    public create = async (entity: SessionDeviceDB): Promise<string> => {
-        const result = await sessionDevicesCollection.insertOne(entity);
-        return String(result.insertedId);
+    public create = async (dto: SessionDeviceDB): Promise<string> => {
+        const session = new SessionDeviceModel(dto);
+        await session.save();
+        return session.id;
     }
 
     public update = async (body: SessionDeviceDB): Promise<boolean> => {
-        const resp = await sessionDevicesCollection.updateOne({deviceId: body.deviceId},
+        const resp = await SessionDeviceModel.updateOne({deviceId: body.deviceId},
             {
                 $set: {
                     title: body.title,
@@ -30,12 +31,12 @@ export class SessionDevicesRepository {
     }
 
     public remove = async (deviceId: string): Promise<boolean> => {
-        const response = await sessionDevicesCollection.deleteOne({deviceId: deviceId});
+        const response = await SessionDeviceModel.deleteOne({deviceId: deviceId});
         return response.deletedCount > 0
     }
 
     public removeAllSessionsExceptCurrent = async (currentSessionDeviceId: string, userId: string): Promise<boolean> => {
-        const response = await sessionDevicesCollection.deleteMany({
+        const response = await SessionDeviceModel.deleteMany({
             userId,
             deviceId: {$ne: currentSessionDeviceId}
         });

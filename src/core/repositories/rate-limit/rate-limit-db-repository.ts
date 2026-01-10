@@ -1,12 +1,13 @@
 import {RateLimitRecordDB} from "../../types/rate-limit-record";
 import {injectable} from "inversify";
-import {rateLimitsCollection} from "../../../db-settings";
+import {RateLimitRecordModel} from "../../schemas/rate-limit-record-schema";
 
 @injectable()
 export class RateLimitsRepository {
 
-    public async create(body: RateLimitRecordDB): Promise<string> {
-        const result = await rateLimitsCollection.insertOne(body);
-        return String(result.insertedId);
+    public async create(dto: RateLimitRecordDB): Promise<string> {
+        const entity = new RateLimitRecordModel(dto)
+        await entity.save();
+        return entity.id
     }
 }

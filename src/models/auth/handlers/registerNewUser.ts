@@ -21,7 +21,7 @@ export const registerNewUserHandler = async (req: Request<{}, UserInputModel>, r
             .sendStatus(HTTP_STATUS_CODES.NO_CONTENT_204)
         return
     }
-
+    console.log(getErrorRespond(result.extensions));
     res.status(getHttpStatusCodeFromResultStatusCode(result.status)).send(getErrorRespond(result.extensions));
 
 }

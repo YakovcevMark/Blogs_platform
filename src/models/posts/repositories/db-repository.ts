@@ -1,14 +1,14 @@
 import {PostViewModel} from "../types/post.view.model";
 import {PostInputModel} from "../types/post.input.model";
-import {postsCollection} from "../../../db-settings";
 import {ObjectId, WithId} from "mongodb";
 import {injectable} from "inversify";
+import {PostModel} from "../schemas/post.db.schema";
 
 @injectable()
 export class PostsRepository {
 
     public getById = async (id: string): Promise<WithId<PostViewModel> | null> => {
-        const entity = await postsCollection.findOne({_id: new ObjectId(id)})
+        const entity = await PostModel.findOne({_id: new ObjectId(id)})
         if (!entity) {
             return null
         } else {
@@ -16,13 +16,14 @@ export class PostsRepository {
         }
     }
 
-    public create = async (entity: PostViewModel): Promise<string> => {
-        const result = await postsCollection.insertOne(entity);
-        return String(result.insertedId)
+    public create = async (dto: PostViewModel): Promise<string> => {
+        const entity = new PostModel(dto)
+        await entity.save()
+        return entity.id
     }
 
     public update = async (id: string, body: PostInputModel): Promise<boolean> => {
-        const resp = await postsCollection.updateOne({_id: new ObjectId(id)},
+        const resp = await PostModel.updateOne({_id: new ObjectId(id)},
             {
                 $set: {
                     ...body
@@ -33,7 +34,7 @@ export class PostsRepository {
     }
 
     public remove = async (id: string): Promise<boolean> => {
-        const response = await postsCollection.deleteOne({_id: new ObjectId(id)});
+        const response = await PostModel.deleteOne({_id: new ObjectId(id)});
         return response.deletedCount > 0
     }
 

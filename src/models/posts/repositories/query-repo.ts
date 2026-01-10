@@ -1,4 +1,3 @@
-import {postsCollection} from "../../../db-settings";
 import {ObjectId, WithId} from "mongodb";
 import {getMongoViewModel} from "../../../core/utils/get-view-model";
 import {PostViewModel} from "../types/post.view.model";
@@ -9,6 +8,7 @@ import {getSkipDbValue} from "../../../core/utils/get-skip-db-value";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
 import {injectable} from "inversify";
+import {PostModel} from "../schemas/post.db.schema";
 
 @injectable()
 export class PostsQueryRepository {
@@ -29,12 +29,12 @@ export class PostsQueryRepository {
     public getAll = async (params: PostsQueryList): Promise<PaginatorOutput<PostViewModel>> => {
         const {sortBy, sortDirection, pageSize, pageNumber, blogId} = params;
 
-        const items = await postsCollection
+        const items = await PostModel
             .find(getDbFilters<PostViewModel>([{fieldName: 'blogId', queryParam: blogId}]))
-            .sort(sortBy, getSortDbDirection(sortDirection))
+            .sort({[sortBy]: getSortDbDirection(sortDirection)})
             .skip(getSkipDbValue({pageSize, pageNumber}))
             .limit(pageSize)
-            .toArray()
+            .lean()
 
         const totalCount = await this.getCount({blogId})
 
@@ -49,7 +49,7 @@ export class PostsQueryRepository {
 
     public getCount = async (params: Pick<PostsQueryList, 'blogId'>): Promise<number> => {
         const {blogId} = params
-        return await postsCollection.countDocuments(
+        return PostModel.countDocuments(
             getDbFilters<PostViewModel>([{
                 fieldName: 'blogId',
                 queryParam: blogId
@@ -58,13 +58,13 @@ export class PostsQueryRepository {
     }
 
     public getById = async (id: string): Promise<PostViewModel | null> => {
-        const entity =  await postsCollection.findOne({_id: new ObjectId(id)})
+        const entity = await PostModel.findOne({_id: new ObjectId(id)}).lean()
         if (!entity) return null;
         return PostsQueryRepository.getViewModel(entity)
     }
 
     public isPersistInDb = async (id: string): Promise<boolean> => {
-        const count = await postsCollection.countDocuments({_id: new ObjectId(id)});
+        const count = await PostModel.countDocuments({_id: new ObjectId(id)});
         return count > 0;
     }
 }
