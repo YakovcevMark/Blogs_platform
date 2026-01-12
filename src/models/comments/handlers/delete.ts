@@ -7,7 +7,7 @@ import {CommentsQueryRepository} from "../repositories/query-repo";
 const commentsService = ioc.get(CommentsService)
 const commentsQueryRepository = ioc.get(CommentsQueryRepository)
 export const deleteCommentHandler = async (req: Request, res: Response) => {
-    const comment = await commentsQueryRepository.getById({id: req.params.commentId});
+    const comment = await commentsQueryRepository.getById(req.params.commentId, req.userId!);
 
     if (!comment) {
         res.sendStatus(HTTP_STATUS_CODES.NOT_FOUND_404)

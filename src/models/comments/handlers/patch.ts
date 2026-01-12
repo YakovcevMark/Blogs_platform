@@ -8,7 +8,7 @@ import {ioc} from "../../../core/index";
 const commentsService = ioc.get(CommentsService)
 const commentsQueryRepository = ioc.get(CommentsQueryRepository)
 export const updateCommentHandler = async (req: Request<{ commentId: string }, CommentInputModel>, res: Response) => {
-    const comment = await commentsQueryRepository.getById({id: req.params.commentId});
+    const comment = await commentsQueryRepository.getById(req.params.commentId, req.userId!);
 
     if (!comment) {
         res.sendStatus(HTTP_STATUS_CODES.NOT_FOUND_404)

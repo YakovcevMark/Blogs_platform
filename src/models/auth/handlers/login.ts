@@ -8,14 +8,12 @@ import {AuthService} from "../application/auth.service";
 
 const authService = ioc.get(AuthService);
 export const loginHandler = async (req: Request<{}, LoginInputModel>, res: Response) => {
-    const token = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
 
     const result = await authService.login({
         userLoginOrEmail: req.body.loginOrEmail,
         bodyPassword: req.body.password,
         ip: req.ip!,
         deviceName: req.headers.host!,
-        cookieToken: token,
     })
 
     if (result.status === SERVICE_RESULT_CODES.OK) {

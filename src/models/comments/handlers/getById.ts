@@ -6,7 +6,7 @@ import {ioc} from "../../../core/index";
 
 const commentsQueryRepository = ioc.get(CommentsQueryRepository)
 export const getCommentByIdHandler = async (req: Request<RequestEntityId>, res: Response) => {
-    const comment = await commentsQueryRepository.getById({id:req.params.id});
+    const comment = await commentsQueryRepository.getById(req.params.id, req.userId!);
     if(!comment) {
         res.sendStatus(HTTP_STATUS_CODES.NOT_FOUND_404)
         return;

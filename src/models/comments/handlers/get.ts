@@ -15,6 +15,6 @@ export const getCommentsHandler = async (req: Request<{ postId: string }>, res: 
         return;
     }
     const queryParamsFromValidator = matchedData(req, {locations: ['query']}) as CommentsQueryList;
-    const comments = await commentsQueryRepository.getAll({...req.params, ...req.query, ...queryParamsFromValidator});
+    const comments = await commentsQueryRepository.getAll({...req.params, ...req.query, ...queryParamsFromValidator}, req.userId!);
     res.send(comments)
 }

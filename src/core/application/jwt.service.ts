@@ -12,11 +12,11 @@ type JWTPayload = {
 @injectable()
 export class JwtService {
     public createJWT = async (userId: string): Promise<string> => {
-        return jwt.sign({userId}, secret, {expiresIn: "10s"});
+        return jwt.sign({userId}, secret, {expiresIn: "5m"});
     }
 
     public createJWTRefreshToken = async (userId: string, deviceId: string): Promise<string> => {
-        return jwt.sign({userId, deviceId}, secret, {expiresIn: "20s"});
+        return jwt.sign({userId, deviceId}, secret, {expiresIn: "10m"});
     }
 
     public verifyToken = async (token: string): Promise<JWTPayload | null> => {

@@ -10,5 +10,6 @@ const CommentScheme = new Schema({
     createdAt: {type: String, required: true},
     commentatorInfo: {type: CommentatorInfoScheme, required: true},
     postId: {type: String, required: true},
+    likesIds: {type: [String], required: true, default:[]},
 })
 export const CommentModel = model('CommentScheme', CommentScheme);

@@ -9,7 +9,6 @@ export class PostsService {
     }
     public create = async (body: PostInputModel, blog: BlogViewModel): Promise<string> => {
         const entity = {
-            id: String(+new Date()),
             blogName: blog!.name,
             createdAt: new Date().toISOString(),
             ...body,

@@ -9,11 +9,12 @@ import {getPagesCount} from "../../../core/utils/get-pages-count";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {injectable} from "inversify";
 import {BlogModel} from "../schemas/blog.schema";
+import {RequestEntityId} from "../../../core/types";
 
 @injectable()
 export class BlogsQueryRepository {
 
-    static getViewModel = (blog: WithId<BlogViewModel>): BlogViewModel => {
+    static getViewModel = (blog: WithId<BlogViewModel>): BlogViewModel & RequestEntityId => {
         const blogDB = getMongoViewModel(blog)
         return {
             id: blogDB.id,
@@ -60,7 +61,7 @@ export class BlogsQueryRepository {
     }
 
     public getById = async (id: string): Promise<BlogViewModel | null> => {
-        const blog = await BlogModel.findOne({_id: new ObjectId(id)})
+        const blog = await BlogModel.findOne({_id: new ObjectId(id)}).lean()
         if (!blog) return null;
         return BlogsQueryRepository.getViewModel(blog);
     }

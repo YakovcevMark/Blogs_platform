@@ -9,11 +9,12 @@ import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
 import {injectable} from "inversify";
 import {PostModel} from "../schemas/post.db.schema";
+import {RequestEntityId} from "../../../core/types";
 
 @injectable()
 export class PostsQueryRepository {
 
-    static getViewModel = (post: WithId<PostViewModel>): PostViewModel => {
+    static getViewModel = (post: WithId<PostViewModel>): PostViewModel & RequestEntityId => {
         const postDB = getMongoViewModel(post)
         return {
             id: postDB.id,

@@ -8,7 +8,7 @@ import {BlogModel} from "../schemas/blog.schema";
 export class BlogsRepository {
 
     public getById = async (id: string): Promise<WithId<BlogViewModel> | null> => {
-        return BlogModel.findOne({_id: new ObjectId(id)})
+        return BlogModel.findOne({_id: new ObjectId(id)}).lean()
     }
 
     public create = async (dto: BlogViewModel): Promise<string> => {

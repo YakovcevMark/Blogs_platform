@@ -1,6 +1,5 @@
 import {CommentDb} from "../types/comment.db.model";
 import {RequestEntityId} from "../../../core/types";
-import {CommentInputModel} from "../types/comment.input.model";
 import {injectable} from "inversify";
 import {CommentModel} from "../schemes/comment.db.schema";
 import {ObjectId} from "mongodb";
@@ -14,7 +13,7 @@ export class CommentsRepository {
         return entity.id;
     }
 
-    public update = async ({body, id}: RequestEntityId & { body: CommentInputModel }): Promise<boolean> => {
+    public update = async ({body, id}: RequestEntityId & { body: Partial<CommentDb> }): Promise<boolean> => {
         const resp = await CommentModel.updateOne({_id: new ObjectId(id)},
             {
                 $set: {

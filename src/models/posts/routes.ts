@@ -15,6 +15,7 @@ import {getCommentsHandler} from "../comments/handlers/get";
 import {commentValidationMiddleware} from "../comments/validation/comment.dto.validation";
 import {createCommentHandler} from "../comments/handlers/post";
 import {superAdminGuardMiddleware} from "../../middleware/super-admin-guard-middleware";
+import {notNecessaryAuthTokenCheckingMiddleware} from "../../middleware/not-necessary-auth-token-checking-middleware";
 
 const postsRouter = Router()
 
@@ -25,7 +26,7 @@ postsRouter.put('/:id', superAdminGuardMiddleware, postValidationMiddleware, inp
 postsRouter.delete('/:id', superAdminGuardMiddleware, deletePostHandler)
 
 // comments
-postsRouter.get('/:postId/comments', idValidation({name:'postId', type:'param'}), commentsQueryMiddleware, inputValidationResultMiddleware, getCommentsHandler)
+postsRouter.get('/:postId/comments', notNecessaryAuthTokenCheckingMiddleware, idValidation({name:'postId', type:'param'}), commentsQueryMiddleware, inputValidationResultMiddleware, getCommentsHandler)
 postsRouter.post('/:postId/comments', authMiddleware, idValidation({name:'postId', type:'param'}), commentValidationMiddleware, inputValidationResultMiddleware, createCommentHandler)
 
 export {postsRouter};

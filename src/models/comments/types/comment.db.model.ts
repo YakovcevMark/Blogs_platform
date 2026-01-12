@@ -5,4 +5,5 @@ export type CommentDb = {
     createdAt: string;
     commentatorInfo: CommentatorInfo;
     postId: string;
+    likesIds: string[]
 }

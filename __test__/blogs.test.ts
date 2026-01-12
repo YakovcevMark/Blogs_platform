@@ -70,7 +70,6 @@ describe(RoutePaths.blogs, () => {
         })
     })
 
-
     it('should get entity by id', async () => {
         const resp = await request(app).get(`${RoutePaths.blogs}${createdBlog?.id}`)
         expect(resp.status).toBe(HTTP_STATUS_CODES.OK_200)

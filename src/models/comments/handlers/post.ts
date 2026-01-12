@@ -14,7 +14,7 @@ export const createCommentHandler = async (req: Request<{ postId: string }, Comm
     const result = await commentsService.create({postId: req.params.postId, body: req.body, userId: req.userId!});
 
     if (result.status === SERVICE_RESULT_CODES.OK) {
-        const comment = await commentsQueryRepository.getById({id: result.data!.createdCommentId});
+        const comment = await commentsQueryRepository.getById(result.data!.createdCommentId, req.userId!);
         res
             .status(HTTP_STATUS_CODES.CREATED_201)
             .send(comment)

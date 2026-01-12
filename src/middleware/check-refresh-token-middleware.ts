@@ -21,7 +21,6 @@ export const checkRefreshTokenMiddleware = async (
         }
 
         const payload = await jwtService.verifyToken(token);
-
         if (!payload) {
             return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
         }
@@ -31,7 +30,7 @@ export const checkRefreshTokenMiddleware = async (
             return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
         }
 
-        if (session.lastActiveDate.getTime() !== payload.iat) {
+        if (session.lastActiveDate.getTime() !== payload.iat * 1000) {
             return res.sendStatus(HTTP_STATUS_CODES.UNAUTHORIZED_401);
         }
 

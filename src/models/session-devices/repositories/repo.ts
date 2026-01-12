@@ -7,7 +7,7 @@ import {SessionDeviceModel} from "../schemas/session-schema";
 export class SessionDevicesRepository {
 
     public getByDeviceId = async (deviceId: string): Promise<WithId<SessionDeviceDB> | null> => {
-        return SessionDeviceModel.findOne({deviceId: deviceId});
+        return SessionDeviceModel.findOne({deviceId: deviceId}).lean();
     }
 
     public create = async (dto: SessionDeviceDB): Promise<string> => {

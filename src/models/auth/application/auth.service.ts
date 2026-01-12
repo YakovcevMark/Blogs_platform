@@ -224,12 +224,11 @@ export class AuthService {
 
     }
 
-    public login = async ({userLoginOrEmail, bodyPassword, deviceName, ip, cookieToken}: {
+    public login = async ({userLoginOrEmail, bodyPassword, deviceName, ip}: {
         userLoginOrEmail: string,
         bodyPassword: string,
         ip: string,
         deviceName: string,
-        cookieToken?: string,
     }): Promise<Result<{ accessToken: string, refreshToken: string } | null>> => {
 
         const userDB = await this.usersRepository.getUserByLoginOrEmail(userLoginOrEmail)
@@ -259,35 +258,17 @@ export class AuthService {
         }
 
 
-        let deviceId;
-
-        if (cookieToken) {
-            const payload = await this.jwtService.verifyToken(cookieToken);
-            deviceId = payload?.deviceId;
-        }
-
-        const tokens = await this.generateTokens(String(userDB._id), deviceId);
+        const tokens = await this.generateTokens(String(userDB._id));
         const refreshTokenHeaderAndPayload = await this.jwtService.verifyToken(tokens.refreshToken);
 
-        if (deviceId) {
-            await this.sessionDevicesService.update({
-                deviceId,
-                expireAt: new Date(refreshTokenHeaderAndPayload!.exp),
-                lastActiveDate: new Date(refreshTokenHeaderAndPayload!.iat),
-                title: deviceName,
-                ip,
-                userId: String(userDB._id)
-            })
-        } else {
-            await this.sessionDevicesService.create({
-                deviceId: refreshTokenHeaderAndPayload!.deviceId,
-                expireAt: new Date(refreshTokenHeaderAndPayload!.exp),
-                lastActiveDate: new Date(refreshTokenHeaderAndPayload!.iat),
-                title: deviceName,
-                ip,
-                userId: String(userDB._id),
-            })
-        }
+        await this.sessionDevicesService.create({
+            deviceId: refreshTokenHeaderAndPayload!.deviceId,
+            expireAt: new Date(refreshTokenHeaderAndPayload!.exp * 1000),
+            lastActiveDate: new Date(refreshTokenHeaderAndPayload!.iat * 1000),
+            title: deviceName,
+            ip,
+            userId: String(userDB._id),
+        })
 
         return {
             status: SERVICE_RESULT_CODES.OK,

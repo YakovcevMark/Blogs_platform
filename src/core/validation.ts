@@ -46,3 +46,21 @@ export const urlValidation = (props: StringValidation) => stringValidation(props
 
 export const emailValidation = (props: StringValidation) => stringValidation(props)
     .isEmail().withMessage(validationMessages.email)
+
+type AnyEnum = Record<string, string | number>;
+
+export const enumValidation = <E extends AnyEnum>(name: string, enumObj: E) => {
+    const raw = Object.values(enumObj);
+
+    // Numeric enums at runtime contain reverse mapping (strings + numbers),
+    // so we keep only numbers if there are any, otherwise keep strings.
+    const values = raw.some(v => typeof v === 'number')
+        ? raw.filter((v): v is number => typeof v === 'number')
+        : raw.filter((v): v is string => typeof v === 'string');
+
+    return body(name)
+        .exists()
+        .withMessage(`should send one of these values: ${values.join(', ')}`)
+        .isIn(values)
+        .withMessage(`Allowed values: ${values.join(', ')}`);
+};
