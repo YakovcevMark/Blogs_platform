@@ -12,11 +12,10 @@ import {sessionDevicesRouter} from "./models/session-devices/routes";
 import {SessionDeviceModel} from "./models/session-devices/schemas/session-schema";
 import {PasswordRecoveryCodeModel} from "./core/schemas/password-recovery-code-db-schema";
 import {RateLimitRecordModel} from "./core/schemas/rate-limit-record-schema";
-import {CommentModel} from "./models/comments/schemes/comment.db.schema";
+import {CommentLikeModel, CommentModel} from "./models/comments/schemes/comment.db.schema";
 import {UserModel} from "./models/users/schemas/user.db.schema";
 import {PostModel} from "./models/posts/schemas/post.db.schema";
 import {BlogModel} from "./models/blogs/schemas/blog.schema";
-import {LikeModel} from "./models/likes/schemas/like.schema";
 
 export const setupApp = async (app: Express) => {
     //TODO: сделать глобальную отловку ошибок
@@ -43,7 +42,7 @@ export const setupApp = async (app: Express) => {
             SessionDeviceModel.deleteMany(),
             RateLimitRecordModel.deleteMany(),
             PasswordRecoveryCodeModel.deleteMany(),
-            LikeModel.deleteMany(),
+            CommentLikeModel.deleteMany(),
         ])
         res.sendStatus(HTTP_STATUS_CODES.NO_CONTENT_204)
     });

@@ -8,15 +8,14 @@ import {CommentViewModel} from "../types/comment.view.model";
 import {getMongoViewModel} from "../../../core/utils/get-view-model";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
-import {inject, injectable} from "inversify";
-import {CommentModel} from "../schemes/comment.db.schema";
-import {LikesQueryRepository} from "../../likes/repositories/likes.query.repository";
-import {LikeStatus} from "../../likes/enums/like.status.enum";
+import {injectable} from "inversify";
+import {CommentLikeModel, CommentModel} from "../schemes/comment.db.schema";
+import {LikeStatus} from "../../../core/enums/like.status.enum";
+import {CommentLikeDb} from "../types/comment.like.db";
 
 @injectable()
 export class CommentsQueryRepository {
-    constructor(@inject(LikesQueryRepository) protected likesQueryRepository: LikesQueryRepository) {
-    }
+
 
     static getViewModel = (comment: WithId<CommentDb>, likesCount: number, dislikesCount: number, myStatus: LikeStatus): CommentViewModel => {
         const commentDB = getMongoViewModel(comment)
@@ -39,15 +38,7 @@ export class CommentsQueryRepository {
         ])
     }
 
-    private getLikesData(entity: CommentDb, userId: string) {
-        return Promise.all([
-            this.likesQueryRepository.getLikesCount(entity.likesIds),
-            this.likesQueryRepository.getDislikesCount(entity.likesIds),
-            this.likesQueryRepository.getStatusByUserId(entity.likesIds, userId)
-        ])
-    }
-
-    public getAll = async (params: CommentsQueryList, userId:string): Promise<PaginatorOutput<CommentViewModel>> => {
+    public getAll = async (params: CommentsQueryList, userId: string): Promise<PaginatorOutput<CommentViewModel>> => {
         const {postId, sortBy, sortDirection, pageSize, pageNumber} = params;
 
         const items = await CommentModel
@@ -59,12 +50,32 @@ export class CommentsQueryRepository {
 
         const totalCount = await this.getCount({postId})
 
-        const parsedItems = [];
+        const likeRecords = await CommentLikeModel.find({commentId:items.map(comment => String(comment._id))}).lean()
 
-        for (const item of items) {
-            const [likesCount, dislikeCount, currentUserStatus] = await this.getLikesData(item, userId);
-            parsedItems.push(CommentsQueryRepository.getViewModel(item, likesCount, dislikeCount, currentUserStatus))
-        }
+        const mapWithLikes:Record<string, CommentLikeDb[]> = {}
+
+        likeRecords.forEach((likeRecord) => {
+            if(!mapWithLikes[likeRecord.commentId]){
+                mapWithLikes[likeRecord.commentId] = []
+            }
+            mapWithLikes[likeRecord.commentId].push(likeRecord)
+        })
+
+        const parsedItems = items.map((comment) => {
+            let
+                likesCount = 0,
+                dislikeCount = 0,
+                currentUserStatus = LikeStatus.None;
+            mapWithLikes[String(comment._id)].forEach((record) => {
+                record.status === LikeStatus.Like && (likesCount++);
+                record.status === LikeStatus.Dislike && (dislikeCount++);
+                record.userId === userId && (currentUserStatus = record.status);
+            });
+
+
+            return CommentsQueryRepository.getViewModel(comment, likesCount, dislikeCount, currentUserStatus)
+        });
+
 
 
         return {
@@ -87,8 +98,20 @@ export class CommentsQueryRepository {
         const entity = await CommentModel.findOne({_id: new ObjectId(id)}).lean();
 
         if (entity) {
-            const [likesCount, dislikesCount, currentUserStatus] = await this.getLikesData(entity, userId);
-            return CommentsQueryRepository.getViewModel(entity, likesCount, dislikesCount, currentUserStatus);
+            const likeRecords = await CommentLikeModel.find({commentId: String(entity._id)}).lean();
+
+            let
+                likesCount = 0,
+                dislikeCount = 0,
+                currentUserStatus = LikeStatus.None;
+
+            likeRecords.forEach((record) => {
+                record.status === LikeStatus.Like && (likesCount++);
+                record.status === LikeStatus.Dislike && (dislikeCount++);
+                record.userId === userId && (currentUserStatus = record.status);
+            });
+
+            return CommentsQueryRepository.getViewModel(entity, likesCount, dislikeCount, currentUserStatus);
         }
         return null;
     }

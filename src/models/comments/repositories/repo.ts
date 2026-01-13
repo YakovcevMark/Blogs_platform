@@ -3,17 +3,19 @@ import {RequestEntityId} from "../../../core/types";
 import {injectable} from "inversify";
 import {CommentModel} from "../schemes/comment.db.schema";
 import {ObjectId} from "mongodb";
+import {CommentLikeDb} from "../types/comment.like.db";
+import {HydratedDocument} from "mongoose";
 
 @injectable()
 export class CommentsRepository {
 
-    public create = async (dto: CommentDb): Promise<string> => {
+    async create (dto: CommentDb): Promise<string>{
         const entity = new CommentModel(dto);
         await entity.save();
         return entity.id;
     }
 
-    public update = async ({body, id}: RequestEntityId & { body: Partial<CommentDb> }): Promise<boolean> => {
+    async update ({body, id}: RequestEntityId & { body: Partial<CommentDb> }): Promise<boolean>{
         const resp = await CommentModel.updateOne({_id: new ObjectId(id)},
             {
                 $set: {
@@ -29,4 +31,7 @@ export class CommentsRepository {
         return response.deletedCount > 0
     }
 
+    async saveLikeRecord(like:HydratedDocument<CommentLikeDb>) {
+        await like.save();
+    }
 }

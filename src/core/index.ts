@@ -27,8 +27,6 @@ import {PasswordRecoveryCodesService} from "./application/password-recovery-code
 import {
     PasswordRecoveryCodesRepository
 } from "./repositories/password-recovery-codes/password-recovery-codes-repository";
-import {LikesRepository} from "../models/likes/repositories/likes.repository";
-import {LikesQueryRepository} from "../models/likes/repositories/likes.query.repository";
 
 export const ioc: Container = new Container();
 
@@ -67,8 +65,5 @@ ioc.bind(CommentsService).to(CommentsService);
 
 ioc.bind(PasswordRecoveryCodesRepository).to(PasswordRecoveryCodesRepository);
 ioc.bind(PasswordRecoveryCodesService).to(PasswordRecoveryCodesService);
-
-ioc.bind(LikesRepository).to(LikesRepository)
-ioc.bind(LikesQueryRepository).to(LikesQueryRepository)
 
 

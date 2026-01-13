@@ -6,7 +6,7 @@ import {commentValidationMiddleware} from "./validation/comment.dto.validation";
 import {deleteCommentHandler} from "./handlers/delete";
 import {getCommentByIdHandler} from "./handlers/getById";
 import {updateCommentHandler} from "./handlers/patch";
-import {LikeStatus} from "../likes/enums/like.status.enum";
+import {LikeStatus} from "../../core/enums/like.status.enum";
 import {changeCommentLikeStatusHandler} from "./handlers/change-like-status";
 import {notNecessaryAuthTokenCheckingMiddleware} from "../../middleware/not-necessary-auth-token-checking-middleware";
 

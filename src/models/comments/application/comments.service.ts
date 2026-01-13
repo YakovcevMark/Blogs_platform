@@ -8,11 +8,9 @@ import {PostsRepository} from "../../posts/repositories/db-repository";
 import {inject, injectable} from "inversify";
 import {UsersRepository} from "../../users/repositories/repo";
 import {CommentsRepository} from "../repositories/repo";
-import {CommentModel} from "../schemes/comment.db.schema";
+import {CommentLikeModel, CommentModel} from "../schemes/comment.db.schema";
 import {ObjectId} from "mongodb";
-import {LikesRepository} from "../../likes/repositories/likes.repository";
-import {LikeModel} from "../../likes/schemas/like.schema";
-import {LikeStatus} from "../../likes/enums/like.status.enum";
+import {LikeStatus} from "../../../core/enums/like.status.enum";
 
 @injectable()
 export class CommentsService {
@@ -20,7 +18,6 @@ export class CommentsService {
         @inject(UsersRepository) protected usersRepository: UsersRepository,
         @inject(PostsRepository) protected postsRepository: PostsRepository,
         @inject(CommentsRepository) protected commentsRepository: CommentsRepository,
-        @inject(LikesRepository) protected likesRepository: LikesRepository,
     ) {
     }
 
@@ -98,22 +95,18 @@ export class CommentsService {
             }
         }
 
-        const like = await this.likesRepository.getByUserId(comment.likesIds, userId)
+        const like = await CommentLikeModel.findOne({commentId: String(comment._id), userId})
         if (like === null) {
-            const createdLike = new LikeModel({
+            const createdLike = new CommentLikeModel({
+                commentId: String(comment._id),
                 userId,
                 status
             })
-            await createdLike.save();
-            comment.likesIds.push(createdLike.id);
-            comment.markModified('likesIds')
-            await comment.save();
-        } else if (like.status !== status) {
+            await this.commentsRepository.saveLikeRecord(createdLike)
+        } else if(like.status !== status) {
             like.status = status;
-            like.markModified('status');
-            await like.save();
+            await this.commentsRepository.saveLikeRecord(like)
         }
-
 
         return {
             status: SERVICE_RESULT_CODES.OK

@@ -1,6 +1,6 @@
 import {RequestEntityId} from "../../../core/types";
 import {CommentatorInfo} from "./commentator";
-import {LikeStatus} from "../../likes/enums/like.status.enum";
+import {LikeStatus} from "../../../core/enums/like.status.enum";
 
 export type CommentViewModel = RequestEntityId & {
     content: string
