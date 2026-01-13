@@ -8,8 +8,7 @@ import {PostsRepository} from "../../posts/repositories/db-repository";
 import {inject, injectable} from "inversify";
 import {UsersRepository} from "../../users/repositories/repo";
 import {CommentsRepository} from "../repositories/repo";
-import {CommentLikeModel, CommentModel} from "../schemes/comment.db.schema";
-import {ObjectId} from "mongodb";
+import {CommentLikeModel} from "../schemes/comment.db.schema";
 import {LikeStatus} from "../../../core/enums/like.status.enum";
 
 @injectable()
@@ -21,11 +20,11 @@ export class CommentsService {
     ) {
     }
 
-    public create = async (params: {
+    async create(params: {
         userId: string,
         body: CommentInputModel,
         postId: string
-    }): Promise<Result<{ createdCommentId: string } | null>> => {
+    }): Promise<Result<{ createdCommentId: string } | null>> {
 
         const {postId, userId, body} = params;
 
@@ -74,18 +73,18 @@ export class CommentsService {
         }
     }
 
-    public update = async (params: RequestEntityId & {
+    async update(params: RequestEntityId & {
         body: CommentInputModel,
-    }): Promise<boolean> => {
+    }): Promise<boolean> {
         return await this.commentsRepository.update(params)
     }
 
-    public remove = async (id: string): Promise<boolean> => {
+    async remove(id: string): Promise<boolean> {
         return await this.commentsRepository.remove(id);
     }
 
     async changeLikeStatus(commentId: string, userId: string, status: LikeStatus): Promise<Result> {
-        const comment = await CommentModel.findById(new ObjectId(commentId));
+        const comment = await this.commentsRepository.getById(commentId);
 
         if (comment === null) {
             return {
@@ -95,15 +94,15 @@ export class CommentsService {
             }
         }
 
-        const like = await CommentLikeModel.findOne({commentId: String(comment._id), userId})
+        const like = await this.commentsRepository.getLikeRecord(commentId, userId)
         if (like === null) {
             const createdLike = new CommentLikeModel({
-                commentId: String(comment._id),
+                commentId,
                 userId,
                 status
             })
             await this.commentsRepository.saveLikeRecord(createdLike)
-        } else if(like.status !== status) {
+        } else if (like.status !== status) {
             like.status = status;
             await this.commentsRepository.saveLikeRecord(like)
         }
