@@ -14,7 +14,7 @@ import {PasswordRecoveryCodeModel} from "./core/schemas/password-recovery-code-d
 import {RateLimitRecordModel} from "./core/schemas/rate-limit-record-schema";
 import {CommentLikeModel, CommentModel} from "./models/comments/schemes/comment.db.schema";
 import {UserModel} from "./models/users/schemas/user.db.schema";
-import {PostModel} from "./models/posts/schemas/post.db.schema";
+import {PostLikeModel, PostModel} from "./models/posts/schemas/post.db.schema";
 import {BlogModel} from "./models/blogs/schemas/blog.schema";
 
 export const setupApp = async (app: Express) => {
@@ -43,6 +43,7 @@ export const setupApp = async (app: Express) => {
             RateLimitRecordModel.deleteMany(),
             PasswordRecoveryCodeModel.deleteMany(),
             CommentLikeModel.deleteMany(),
+            PostLikeModel.deleteMany(),
         ])
         res.sendStatus(HTTP_STATUS_CODES.NO_CONTENT_204)
     });

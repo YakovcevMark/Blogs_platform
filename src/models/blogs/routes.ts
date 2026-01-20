@@ -14,6 +14,7 @@ import {getPostsByBlogIdHandler} from "./handlers/get-posts-by-blog-id-handler";
 import {postValidationMiddleware} from "../posts/validation/post.dto.validation";
 import {createPostByBlogIdHandler} from "./handlers/create.post.by.blog.id";
 import {superAdminGuardMiddleware} from "../../middleware/super-admin-guard-middleware";
+import {notNecessaryAuthTokenCheckingMiddleware} from "../../middleware/not-necessary-auth-token-checking-middleware";
 
 const blogsRouter = Router()
 
@@ -36,12 +37,14 @@ blogsRouter.put('/:id',
 )
 
 blogsRouter.get(`/:blogId${RoutePaths.posts}`,
+    notNecessaryAuthTokenCheckingMiddleware,
     postsQueryMiddleware,
     blogIdParamValidation,
     getPostsByBlogIdHandler
 )
 
 blogsRouter.post(`/:blogId${RoutePaths.posts}`,
+    notNecessaryAuthTokenCheckingMiddleware,
     superAdminGuardMiddleware,
     blogIdParamValidation,
     postValidationMiddleware,

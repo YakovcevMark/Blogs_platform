@@ -18,6 +18,6 @@ export const getPostsByBlogIdHandler = async (req: Request<{ blogId: string }>, 
         return
     }
 
-    const blogs = await postsQueryRepository.getAll({...queryParamsFromValidator, blogId: req.params.blogId});
+    const blogs = await postsQueryRepository.getAll({...queryParamsFromValidator, blogId: req.params.blogId, userId:req.userId!});
     res.send(blogs)
 }

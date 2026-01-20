@@ -8,6 +8,6 @@ const postsQueryRepository = ioc.get(PostsQueryRepository)
 export const getPostsHandler = async (req: Request, res: Response) => {
     const queryParamsFromValidator = matchedData(req, {locations: ['query']}) as PostsQueryList;
 
-    const posts = await postsQueryRepository.getAll({...req.query, ...queryParamsFromValidator});
+    const posts = await postsQueryRepository.getAll({...req.query, ...queryParamsFromValidator, userId: req.userId!});
     res.send(posts)
 }

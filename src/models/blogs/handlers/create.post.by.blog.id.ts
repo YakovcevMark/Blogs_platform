@@ -21,7 +21,7 @@ export const createPostByBlogIdHandler = async (req: Request<{
     }
 
     const id = await postsService.create({...req.body, blogId: req.params.blogId}, blog!);
-    const post = await postsQueryRepository.getById(id);
+    const post = await postsQueryRepository.getById(id, req.userId!);
 
     res
         .status(HTTP_STATUS_CODES.CREATED_201)

@@ -19,7 +19,7 @@ export const createPostHandler = async (req: Request<RequestEntityId, PostInputM
 
     const id = await postsService.create(req.body, blog!);
 
-    const post = await postsQueryRepository.getById(id);
+    const post = await postsQueryRepository.getById(id,req.userId!);
     res
         .status(HTTP_STATUS_CODES.CREATED_201)
         .send(post)

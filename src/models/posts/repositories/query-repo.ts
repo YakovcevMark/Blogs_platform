@@ -8,8 +8,11 @@ import {getSkipDbValue} from "../../../core/utils/get-skip-db-value";
 import {PaginatorOutput} from "../../../core/types/paginator.output";
 import {getPagesCount} from "../../../core/utils/get-pages-count";
 import {injectable} from "inversify";
-import {PostModel} from "../schemas/post.db.schema";
-import {RequestEntityId} from "../../../core/types";
+import {PostLikeModel, PostModel} from "../schemas/post.db.schema";
+import {Nullable, RequestEntityId} from "../../../core/types";
+import {LikeStatus} from "../../../core/enums/like.status.enum";
+import {PostDbModel} from "../types/post.db.model";
+import {PostLikeDb} from "../types/post.like.db";
 
 @injectable()
 export class PostsQueryRepository {
@@ -24,11 +27,31 @@ export class PostsQueryRepository {
             content: postDB.content,
             createdAt: postDB.createdAt,
             blogName: postDB.blogName,
+            extendedLikesInfo: {
+                likesCount: postDB.extendedLikesInfo.likesCount,
+                dislikesCount: postDB.extendedLikesInfo.dislikesCount,
+                myStatus: postDB.extendedLikesInfo.myStatus,
+                newestLikes: postDB.extendedLikesInfo.newestLikes,
+            }
         }
     }
 
-    public getAll = async (params: PostsQueryList): Promise<PaginatorOutput<PostViewModel>> => {
-        const {sortBy, sortDirection, pageSize, pageNumber, blogId} = params;
+    private constructPostModelDependsOfCurrentSessionUserLikeRecord(post: WithId<PostDbModel>, currentSessionUserRecord?: Nullable<PostLikeDb>) {
+        return {
+            ...post,
+            extendedLikesInfo: {
+                ...post.extendedLikesInfo,
+                myStatus: currentSessionUserRecord?.status ?? LikeStatus.None,
+                newestLikes: post.extendedLikesInfo.newestLikes.map((newestLikeRecord) => ({
+                    ...newestLikeRecord,
+                    addedAt: newestLikeRecord.addedAt.toISOString(),
+                })),
+            }
+        }
+    }
+
+    public getAll = async (params: PostsQueryList & { userId: string }): Promise<PaginatorOutput<PostViewModel>> => {
+        const {sortBy, sortDirection, pageSize, pageNumber, blogId, userId} = params;
 
         const items = await PostModel
             .find(getDbFilters<PostViewModel>([{fieldName: 'blogId', queryParam: blogId}]))
@@ -39,9 +62,16 @@ export class PostsQueryRepository {
 
         const totalCount = await this.getCount({blogId})
 
+        const likeRecords = await PostLikeModel.find({postId: items.map(post => String(post._id)), userId}).lean()
+
+        const parsedItems = items.map((post) => {
+            const currentSessionUserRecord = likeRecords.find((record) => record.userId === userId && record.postId === String(post._id))
+            return PostsQueryRepository.getViewModel(this.constructPostModelDependsOfCurrentSessionUserLikeRecord(post, currentSessionUserRecord))
+        });
+
         return {
             pageSize,
-            items: items.map(getMongoViewModel),
+            items: parsedItems,
             page: pageNumber,
             pagesCount: getPagesCount({pageSize, totalCount}),
             totalCount
@@ -58,10 +88,11 @@ export class PostsQueryRepository {
         );
     }
 
-    public getById = async (id: string): Promise<PostViewModel | null> => {
+    public getById = async (id: string, userId: string): Promise<PostViewModel | null> => {
         const entity = await PostModel.findOne({_id: new ObjectId(id)}).lean()
         if (!entity) return null;
-        return PostsQueryRepository.getViewModel(entity)
+        const currentSessionUserRecord = await PostLikeModel.findOne({postId: id, userId}).lean()
+        return PostsQueryRepository.getViewModel(this.constructPostModelDependsOfCurrentSessionUserLikeRecord(entity, currentSessionUserRecord))
     }
 
     public isPersistInDb = async (id: string): Promise<boolean> => {
